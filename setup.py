@@ -26,7 +26,8 @@ setup(
         #download_url='',               # Page from which package could
                                         # be downloaded.
         description=u'{app_name}'.encode('utf-8'),
-        long_description=open('README.rst').read(),
+        long_description=(
+            open('README.rst').read()+open('CHANGES.txt').read()),
         # Full list of classifiers could be found at:
         # http://pypi.python.org/pypi?%3Aaction=list_classifiers
         classifiers=[
