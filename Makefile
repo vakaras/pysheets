@@ -12,7 +12,7 @@ show-coverage: test
 check:
 	bin/pylint \
 		--output-format=html --include-ids=y \
-		$(PACKAGES) >> var/pylint.html
+		$(PACKAGES) >> parts/pylint.html
 
 # Creating environment.
 
