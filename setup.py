@@ -45,5 +45,5 @@ setup(
                 'Topic :: Software Development :: Libraries :: '
                 'Python Modules'),
             ],
-        licence='LGPL'
+        license='LGPL'
         )
