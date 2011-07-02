@@ -1,0 +1,16 @@
+.installed.cfg
+.mr.developer.cfg
+bin/buildout
+bin/coverage
+bin/ctags
+bin/develop
+bin/pylint
+bin/python
+bin/sphinx-build
+bin/sphinx-quickstart
+bin/test
+bin/rst2pdf
+db_utils.egg-info/
+develop-eggs/
+parts/
+docs/build/
