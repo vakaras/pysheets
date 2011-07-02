@@ -47,10 +47,18 @@ def setup(template_parameters, dry_run=False):
     src_directory = os.path.join(PROJECT_DIRECTORY, 'src')
     app_directory = os.path.join(
             src_directory, template_parameters['package_name'])
+    tests_directory = os.path.join(app_directory, 'test')
+
     os.mkdir(src_directory)
     os.mkdir(app_directory)
+    os.mkdir(tests_directory)
+
     with open(os.path.join(app_directory, '__init__.py'), 'w') as file:
         file.write('#!/usr/bin/python\n')
+    with open(os.path.join(tests_directory, 'simple_test.py'), 'w') as file:
+        file.write('#!/usr/bin/python\n\n\n')
+        file.write('import unittest\n\n')
+        file.write('import {0}\n\n'.format(package_name))
 
 
 def main(args):
