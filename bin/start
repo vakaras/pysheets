@@ -58,7 +58,8 @@ def setup(template_parameters, dry_run=False):
     with open(os.path.join(tests_directory, 'simple_test.py'), 'w') as file:
         file.write('#!/usr/bin/python\n\n\n')
         file.write('import unittest\n\n')
-        file.write('import {0}\n\n'.format(package_name))
+        file.write('import {0}\n\n'.format(
+            template_parameters['package_name']))
 
 
 def main(args):
