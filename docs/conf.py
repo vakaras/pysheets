@@ -117,7 +117,7 @@ man_pages = [
 
 # Example configuration for intersphinx: refer to the Python standard 
 # library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+intersphinx_mapping = {{'http://docs.python.org/': None}}
 
 # -- Options for PDF output ---------------------------------------------
 

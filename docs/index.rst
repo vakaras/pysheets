@@ -1,4 +1,4 @@
-Welcome to {name}'s documentation!
+Welcome to {app_name}'s documentation!
 ===================================
 
 Contents:
