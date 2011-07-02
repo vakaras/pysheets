@@ -1,8 +1,8 @@
 PACKAGES={package_name}
 
 test:
-	bin/test ${PACKAGES} \
-		--with-coverage --cover-package="${PACKAGES}" \
+	bin/test $(PACKAGES) \
+		--with-coverage --cover-package="$(PACKAGES)" \
 		--cover-erase --cover-html --cover-html-dir=parts/html
 
 show-coverage: test
@@ -12,7 +12,7 @@ show-coverage: test
 check:
 	bin/pylint \
 		--output-format=html --include-ids=y \
-		${PACKAGES} >> var/pylint.html
+		$(PACKAGES) >> var/pylint.html
 
 # Creating environment.
 
