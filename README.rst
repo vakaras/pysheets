@@ -12,6 +12,7 @@ Structure
 +   ``src`` – directory, where package code is placed.
 +   ``LICENCE.txt`` – LGPL license text.
 +   ``README.rst``.
++   ``CHANGES.txt``.
 +   ``setup.cfg`` – `setup configuration file 
     <http://docs.python.org/distutils/configfile.html>`_.
 +   ``setup.py`` – `description
@@ -63,7 +64,15 @@ How to start
 
     .. code-block:: bash
 
-        python3 bin/start db-utils
+        python3 bin/start ${APP_NAME} ${AUTHOR} ${AUTHOR_EMAIL}
+
+    Example:
+
+    .. code-block:: bash
+
+        python3 bin/start db-utils \
+            "Vytautas Astrauskas" \
+            vastrauskas@gmail.com
 
 #.  Bootstrap:
 
