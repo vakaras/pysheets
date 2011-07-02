@@ -14,7 +14,7 @@ PROJECT_DIRECTORY = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), '..')
 
 
-def setup(template_parameters):
+def setup(template_parameters, dry_run=False):
     """ Setups new development environment.
     """
 
@@ -27,11 +27,22 @@ def setup(template_parameters):
             os.path.join('docs', 'index.rst'),
             ):
 
-        with open(os.path.join(PROJECT_DIRECTORY, file_name)) as file:
+        file_path = os.path.join(PROJECT_DIRECTORY, file_name)
+        print('Changing file: {0}'.format(file_path))
+
+        with open(file_path) as file:
             content = file.read()
 
-        with open(os.path.join(PROJECT_DIRECTORY, file_name)) as file:
-            file.write(content.format(**template_parameters))
+        if dry_run:
+            for i, line in enumerate(content.splitlines()):
+                try:
+                    changed_line = line.format(**template_parameters)
+                except Exception as e:
+                    print('Line "{1}" at {0}.'.format(i+1, line))
+                    raise e
+        else:
+            with open(file_path, 'w') as file:
+                file.write(content.format(**template_parameters))
 
 
 def main(args):
