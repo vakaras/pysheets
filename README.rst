@@ -92,11 +92,24 @@ If you want to update template:
     
     git pull template master
 
-TODO
-====
+If you want to include library created with this template into another
+project, just add egg name into projects ``buildout.cfg`` and
+URL of your repository in ``[sources]`` section, like this:
 
-+   If creating a library, write how to use it in other project.
-    (How to configure buildout.)
+.. code-block:: cfg
+
+    [buildout]
+    ...
+    eggs =
+        ...
+        db-utils
+
+    ... 
+
+    [sources]
+    db-utils = git git://github.com/vakaras/db-utils.git
+    ...
+
 
 Requirements
 ============
