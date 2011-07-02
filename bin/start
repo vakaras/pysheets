@@ -44,6 +44,12 @@ def setup(template_parameters, dry_run=False):
             with open(file_path, 'w') as file:
                 file.write(content.format(**template_parameters))
 
+    app_directory = os.path.join(
+            PROJECT_DIRECTORY, 'src', template_parameters['package_name'])
+    os.mkdir(app_directory)
+    with open(os.path.join(app_directory, '__init__.py'), 'w') as file:
+        file.write('#!/usr/bin/python\n')
+
 
 def main(args):
     """ Creates new dev application.

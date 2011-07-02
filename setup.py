@@ -10,7 +10,7 @@ setup(
         author=u'{author}'.encode('utf-8'),
         author_email=u'{author_email}'.encode('utf-8'),
         packages=['{package_name}',],
-        package_dir={{'{package_name}': 'src'}},
+        package_dir={{'': 'src'}},
         #package_data={{'{package_name}': []}},
                                         # List of data files to be included 
                                         # into package.
