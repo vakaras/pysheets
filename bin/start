@@ -1,0 +1,72 @@
+#!/usr/bin/python3
+
+
+""" Creates new dev app.
+"""
+
+
+import sys
+import os
+import datetime
+
+
+PROJECT_DIRECTORY = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), '..')
+
+
+def setup(template_parameters):
+    """ Setups new development environment.
+    """
+
+    for file_name in (
+            'CHANGES.txt',
+            'setup.py',
+            'Makefile',
+            'buildout.cfg',
+            'docs/conf.py',
+            'docs/index.rst',
+            ):
+
+        with open(os.path.join(app_directory, file_name)) as file:
+            content = file.read()
+
+        with open(os.path.join(app_directory, file_name)) as file:
+            file.write(content.format(**template_parameters))
+
+
+def main(args):
+    """ Creates new dev application.
+    """
+
+    if len(args) < 2:
+        raise Exception('Application name was not specified!')
+    else:
+        app_name = args[1]
+
+    if len(args) < 3:
+        author = os.getenv('DEVELOPER_NAME')
+    else:
+        author = args[2]
+
+    if len(args) < 4:
+        author_email = os.getenv('DEVELOPER_EMAIL')
+    else:
+        author_email = args[3]
+
+    if not author:
+        raise Exception('Author was not specified!')
+    if not author_email:
+        raise Exception('Author email was not specified!')
+
+    setup({
+        'package_name': app_name.replace('-', '_'),
+        'app_name': app_name,
+        'date': datetime.date.today().strftime("%Y-%m-%d"),
+        'year': datetime.date.today().strftime("%Y"),
+        'author': author,
+        'author_email': author_email,
+        })
+
+
+if __name__ == '__main__':
+    main(sys.argv)
