@@ -23,14 +23,14 @@ def setup(template_parameters):
             'setup.py',
             'Makefile',
             'buildout.cfg',
-            'docs/conf.py',
-            'docs/index.rst',
+            os.path.join('docs', 'conf.py'),
+            os.path.join('docs', 'index.rst'),
             ):
 
-        with open(os.path.join(app_directory, file_name)) as file:
+        with open(os.path.join(PROJECT_DIRECTORY, file_name)) as file:
             content = file.read()
 
-        with open(os.path.join(app_directory, file_name)) as file:
+        with open(os.path.join(PROJECT_DIRECTORY, file_name)) as file:
             file.write(content.format(**template_parameters))
 
 
