@@ -1,5 +1,6 @@
 .installed.cfg
 .mr.developer.cfg
+.coverage
 bin/buildout
 bin/coverage
 bin/ctags
