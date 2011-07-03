@@ -12,7 +12,7 @@ show-coverage: test
 check:
 	bin/pylint --rcfile .pylintrc $(PACKAGES) > parts/pylint.html
 
-show-check: check
+show-check:
 	xdg-open parts/pylint.html
 
 # Creating environment.
