@@ -15,3 +15,4 @@ db_utils.egg-info/
 develop-eggs/
 parts/
 docs/build/
+*.pyc
