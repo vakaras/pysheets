@@ -1,4 +1,4 @@
-PACKAGES={package_name}
+PACKAGES=db_utils
 
 test:
 	bin/test $(PACKAGES) \
@@ -10,9 +10,7 @@ show-coverage: test
 
 # Check code quality.
 check:
-	bin/pylint \
-		--output-format=html --include-ids=y \
-		$(PACKAGES) >> parts/pylint.html
+	bin/pylint --rcfile .pylintrc $(PACKAGES) > parts/pylint.html
 
 show-check: check
 	xdg-open parts/pylint.html
