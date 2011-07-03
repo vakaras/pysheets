@@ -1,4 +1,4 @@
-PACKAGES=db_utils
+PACKAGES={package_name}
 
 test:
 	bin/test $(PACKAGES) \
