@@ -14,6 +14,9 @@ check:
 		--output-format=html --include-ids=y \
 		$(PACKAGES) >> parts/pylint.html
 
+show-check: check
+	xdg-open parts/pylint.html
+
 # Creating environment.
 
 bootstrap:
