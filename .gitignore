@@ -11,7 +11,7 @@ bin/sphinx-build
 bin/sphinx-quickstart
 bin/test
 bin/rst2pdf
-db_utils.egg-info/
+*.egg-info/
 develop-eggs/
 parts/
 docs/build/
