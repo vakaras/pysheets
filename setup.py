@@ -14,8 +14,10 @@ setup(
         #package_data={{'{package_name}': []}},
                                         # List of data files to be included 
                                         # into package.
-        requires=[                      # Dependencies for the package.
+        requires=[
             'distribute',
+            ],
+        install_requires=[              # Dependencies for the package.
             ],
         scripts=[],                     # List of python script files.
         #data_files=[('/etc/init.d', ['init-script'])]
