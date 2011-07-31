@@ -31,6 +31,9 @@ Tools
 +   *sphinx* and *rst2pdf* – for documentation;
 +   *rmtoo* – requirements management tool;
 +   *nose* – for testing.
++   `chaoflow.testing.ipython
+    <http://pypi.python.org/pypi/chaoflow.testing.ipython/0.4>`_ – for
+    interactive doctest writing.
 
 Scripts
 =======
