@@ -77,16 +77,42 @@ How to start
             "Vytautas Astrauskas" \
             vastrauskas@gmail.com
 
-#.  Bootstrap:
-
-    .. code-block:: bash
-
-        make bootstrap
-
 #.  Buildout:
     
     .. code-block:: bash
 
+        make buildout
+
+    If you get error like:
+
+    .. code-block:: bash
+
+        Creating /usr/local/lib/python2.6/dist-packages/setuptools-0.6c11-py2.6.egg-info
+        error: /usr/local/lib/python2.6/dist-packages/setuptools-0.6c11-py2.6.egg-info: Permission denied
+        An error occurred when trying to install distribute 0.6.19. Look above this message for any errors that were output by easy_install.
+        While:
+          Installing.
+          Checking for upgrades.
+          Getting distribution for 'distribute'.
+        Error: Couldn't install: distribute 0.6.19
+
+    Then you can install distribute into your home directory:
+
+    .. code-block:: bash
+
+        CURRENT_LOC=`pwd`
+        cd /tmp
+        wget -c http://pypi.python.org/packages/source/d/distribute/distribute-0.6.19.tar.gz
+        tar -xvf distribute-*.tar.gz 
+        cd distribute*
+        python setup.py install --user
+        cd "$CURRENT_LOC"
+
+    After that, rerun buildout:
+
+    .. code-block:: bash
+
+        rm -rf bin/buildout parts/
         make buildout
 
 If you want to update template:
