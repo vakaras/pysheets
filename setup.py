@@ -5,13 +5,13 @@ from distutils.core import setup
 
 
 setup(
-        name=u'{app_name}'.encode('utf-8'),
+        name=u'pysheets'.encode('utf-8'),
         version='0.1',
-        author=u'{author}'.encode('utf-8'),
-        author_email=u'{author_email}'.encode('utf-8'),
-        packages=['{package_name}',],
-        package_dir={{'': 'src'}},
-        #package_data={{'{package_name}': []}},
+        author=u'Vytautas Astrauskas'.encode('utf-8'),
+        author_email=u'vastrauskas@gmail.com'.encode('utf-8'),
+        packages=['pysheets',],
+        package_dir={'': 'src'},
+        #package_data={'pysheets': []},
                                         # List of data files to be included 
                                         # into package.
         requires=[
@@ -27,7 +27,7 @@ setup(
         #url='',                        # Home page.
         #download_url='',               # Page from which package could
                                         # be downloaded.
-        description=u'{app_name}'.encode('utf-8'),
+        description=u'pysheets'.encode('utf-8'),
         long_description=(
             open('README.rst').read()+open('CHANGES.txt').read()),
         # Full list of classifiers could be found at:

@@ -1,4 +1,4 @@
-PACKAGES={package_name}
+PACKAGES=pysheets
 
 test:
 	bin/test $(PACKAGES) \

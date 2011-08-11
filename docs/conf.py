@@ -15,8 +15,8 @@ templates_path = []
 source_suffix = '.rst'
 source_encoding = 'utf-8'
 master_doc = 'index'
-project = u'{app_name}'
-copyright = u'{year}, {author}'
+project = u'pysheets'
+copyright = u'2011, Vytautas Astrauskas'
 version = '0.1'
 release = '0.1'
 
@@ -83,7 +83,7 @@ latex_font_size = '10pt'
 latex_documents = [
   (
       'index', 'main.tex',
-      u'\\{app_name} Documentation', u'\\{author}', 'manual'
+      u'\\pysheets Documentation', u'\\Vytautas Astrauskas', 'manual'
       ),
   ]
 
@@ -110,14 +110,14 @@ latex_documents = [
 man_pages = [
     (
         'index', 'main',
-        u'{app_name} Documentation', [u'{author}'], 1,
+        u'pysheets Documentation', [u'Vytautas Astrauskas'], 1,
         ),
     ]
 
 
 # Example configuration for intersphinx: refer to the Python standard 
 # library.
-intersphinx_mapping = {{'http://docs.python.org/': None}}
+intersphinx_mapping = {'http://docs.python.org/': None}
 
 # -- Options for PDF output ---------------------------------------------
 
@@ -128,7 +128,7 @@ intersphinx_mapping = {{'http://docs.python.org/': None}}
 pdf_documents = [
     (
         'index', u'main',
-        u'{app_name} Documentation', u'{author}'
+        u'pysheets Documentation', u'Vytautas Astrauskas'
         ),
     ]
 pdf_stylesheets = ['sphinx', 'kerning', 'a4']
