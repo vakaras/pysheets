@@ -15,6 +15,23 @@
 """
 
 
+class Row(object):
+    """ Class representing sheet row.
+    """
+
+    def __init__(self, sheet, index, fields):
+
+        self.sheet = sheet
+        self.index = index
+        self.fields = fields
+
+    def append(self, field):
+        """ Appends new field to the row.
+        """
+
+        self.fields.append(field)
+
+
 class Sheet(object):
     """ Class representing simple sheet.
     """
@@ -57,12 +74,23 @@ class Sheet(object):
         elif file or reader_name or reader_class:
             self.read(file, reader_name, reader_class, reader_args)
 
-    def add_column(self, caption):
+    def __len__(self):
+        return len(self.rows)
+
+    def add_column(self, caption, values=()):
         """ Appends column to the right side of sheet.
         """
 
+        if len(self.rows) != len(values):
+            raise ValueError((
+                u'Rows number mismatch. Expected {0}. Is {1}.'
+                ).format(len(self.rows), len(values)))
+
         self.captions_index[caption] = len(self.captions)
         self.captions.append(caption)
+
+        for row, value in zip(self.rows, values):
+            row.append(value)
 
     def add_columns(self, captions):
         """ Appends columns to the right side of sheet.
@@ -70,3 +98,49 @@ class Sheet(object):
 
         for caption in captions:
             self.add_column(caption)
+
+    def append_dict(self, row):
+        """ Appends row to the end of sheet.
+
+        :type row: dict-like
+        """
+
+        fields = []
+        for caption in self.captions:
+            fields.append(row[caption])
+
+        self.rows.append(Row(self, len(self.rows), fields))
+
+    def append_iterable(self, row):
+        """ Appends row to the end of sheet.
+
+        :type row: iterable
+        """
+
+        fields = list(row)
+        if len(fields) != len(self.captions):
+            raise ValueError((
+                u'Columns number mismatch. Expected {0}. Is {1}.'
+                ).format(len(self.captions), len(fields)))
+        else:
+            self.rows.append(Row(self, len(self.rows), fields))
+
+    def append(self, row):
+        """ Appends row to the end of sheet.
+
+        ``row`` is expected to be an iterable with fields in the same
+        order as :py:attr:`Sheet.captions` (the amount of elements
+        must match) or dict-like object, which has all captions in keys.
+
+        Firstly it is tried to treat row as a dict and if it raises
+        :py:class:`TypeError` then it is tried to iterate through
+        it.
+
+        """
+
+        try:
+            row[self.captions[0]]
+        except TypeError:
+            self.append_iterable(row)
+        else:
+            self.append_dict(row)
