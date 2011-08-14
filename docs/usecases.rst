@@ -123,17 +123,10 @@ Ba Ba
 
 Changing entire row:
 
->>> from pysheets.row import Row
->>> row = Row({
+>>> sheet[0] = {
 ...     u'Name': u'Fooer Barer',
 ...     u'E-mail': u'foo@bar.com',
-...     u'Phone numbers': u'+37063333333'})
->>> print row.index                     # Row is not associated with
-...                                     # sheet yet.
-None
->>> sheet[0] = row
->>> print row.index                     # Now row is associated.
-1
+...     u'Phone numbers': u'+37063333333'}
 >>> sheet.get(u'Name')[1]
 Fooer Barer
 
@@ -273,7 +266,7 @@ ValidationError: Values of column ID have to be unique integers.
 2
 >>> del sheet[1]
 >>> sheet.append([u'3'])
->>> sheet[1] = Row({u'ID': 4})
+>>> sheet[1] = {u'ID': 4}
 >>> sheet.append([u'3'])
 
 >>> def split_name(sheet, row, replaced_row=None):
@@ -295,10 +288,10 @@ E-mail First name Last name Phone numbers
 ...     u'Phone numbers': u''})
 >>> sheet.get(u'First name')[-1]
 u'Bla'
->>> sheet[-1] = Row({
+>>> sheet[-1] = {
 ...     u'Name': u'Ku Foo',
 ...     u'E-mail': u'b@g.com',
-...     u'Phone numbers': u''})
+...     u'Phone numbers': u''}
 >>> sheet.get(u'Last name')[-1]
 u'Foo'
 
