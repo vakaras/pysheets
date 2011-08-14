@@ -6,6 +6,8 @@ Contents:
 .. toctree::
     :maxdepth: 2
 
+    usecases.rst
+
 Indices and tables
 ==================
 
