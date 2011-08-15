@@ -23,11 +23,13 @@ class Row(object):
     def __init__(self, sheet, index, fields):
 
         self.sheet = sheet
-        self.index = index
         self.fields = fields
 
     def __getitem__(self, caption):
         return self.fields[self.sheet.captions_index[caption]]
+
+    def __setitem__(self, caption, value):
+        self.fields[self.sheet.captions_index[caption]] = value
 
     def __iter__(self):
         return iter(self.fields)
@@ -74,6 +76,12 @@ class Column(object):
     def __iter__(self):
         for row in self.sheet.rows:
             yield row.fields[self.index]
+
+    def __getitem__(self, index):
+        return self.sheet.rows[index].fields[self.index]
+
+    def __setitem__(self, index, value):
+        self.sheet.rows[index].fields[self.index] = value
 
     @property
     def caption(self):
@@ -154,6 +162,9 @@ class Sheet(object):
 
     def __getitem__(self, index):
         return self.rows[index]
+
+    def __delitem__(self, index):
+        del self.rows[index]
 
     def add_column(self, caption, values=()):
         """ Appends column to the right side of sheet.
@@ -238,18 +249,36 @@ class Sheet(object):
         captions.
 
         If just one caption is provided than instead of returning
-        iterable of lists, which have just one element, a iterable of
-        elements is returned.
+        iterable of lists, which have just one element, a column is
+        returned.
 
         """
 
         if len(captions) == 1:
-            caption = captions[0]
-            for row in self.rows:
-                yield row[caption]
+            return Column(self, self.captions_index[captions[0]])
         else:
+            return ([row[caption] for caption in captions]
+                    for row in self.rows)
+
+    def remove(self, caption):
+        """ Removes column from sheet.
+        """
+
+        if len(self.captions) == 1:
+            # Deleting last column, so just delete all rows.
+            self.rows = []
+            self.captions = []
+            self.captions_index = {}
+        else:
+            index = self.captions_index[caption]
+            del self.captions[index]
+
             for row in self.rows:
-                yield [row[caption] for caption in captions]
+                del row.fields[index]
+
+            # Regenerate caption index.
+            self.captions_index = dict([
+                (caption, i) for i, caption in enumerate(self.captions)])
 
     def filter(self, func):
         """ Returns iterator through rows, for which ``func`` returns
@@ -259,3 +288,26 @@ class Sheet(object):
         for row in self.rows:
             if func(row):
                 yield row
+
+    def sort(self, columns=None, cmp=None, key=None, **kwargs):
+        """ Sorts rows of the sheet.
+
+        :param columns: iterable of column, by which to compare, captions
+
+        .. note::
+            If ``cmp`` or ``key`` is provided, then argument
+            ``columns`` is ignored.
+
+        """
+
+        if cmp or key:
+            self.rows.sort(cmp=cmp, key=key, **kwargs)
+        elif columns is None:
+            self.rows.sort(key=lambda x: x.fields)
+        else:
+            def key(row):
+                """ Returns sort key for the given row.
+                """
+                return [row.fields[self.captions_index[caption]]
+                        for caption in columns]
+            self.rows.sort(key=key, **kwargs)

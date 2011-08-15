@@ -29,6 +29,8 @@ class RowTest(unittest.TestCase):
         self.assertEqual(list(row), [1, 2, 3, u'2'])
         self.assertEqual(row.keys(), [u'a', u'b', u'c'])
         self.assertEqual(row[u'b'], 2)
+        row[u'b'] = 3
+        self.assertEqual(row[u'b'], 3)
 
 
 class ColumnTest(unittest.TestCase):
@@ -46,6 +48,10 @@ class ColumnTest(unittest.TestCase):
         self.assertEqual(col2.caption, u'b')
         self.assertEqual(col2.index, 1)
         self.assertEqual(list(col2), [2, 4, 6])
+        self.assertEqual(col1[1], 3)
+        col1[1] = 10
+        self.assertEqual(col1[1], 10)
+        self.assertEqual(sheet[1][u'a'], 10)
 
         sheet.captions[1] = u'Foo'
         self.assertEqual(col2.caption, u'Foo')
@@ -85,15 +91,61 @@ class SheetTest(unittest.TestCase):
         self.assertEqual(
                 [
                     u' '.join(unicode(field) for field in row)
-                    for row in sheet.filter(func=lambda x: x.index % 2)],
-                [u'4 2 3', u'caca dada haha', u'3 2 5'])
+                    for row in sheet.filter(func=lambda x: x[u'c'] == 5)],
+                [u'2 4 5', u'1 7 5', u'3 2 5'])
         self.assertEqual(
                 list(sheet.get(u'c', u'a')),
                 [[6, 4], [3, 4], [5, 2], [u'haha', u'caca'], [5, 1], [5, 3]]
                 )
 
         sheet.add_column('d', [1, 2, 3, 4, 5, 6])
-        self.assertEqual(list(sheet.get(u'd')), [1, 2, 3, 4, 5, 6])
+        column = sheet.get(u'd')
+        self.assertEqual(column.index, 3)
+        self.assertEqual(list(column), [1, 2, 3, 4, 5, 6])
+
+        def compare(rows):
+            self.assertEqual(
+                    [
+                        u' '.join(unicode(field) for field in row)
+                        for row in sheet],
+                    rows,)
+
+        del sheet[3]
+        compare([
+            u'4 5 6 1', u'4 2 3 2', u'2 4 5 3', u'1 7 5 5', u'3 2 5 6'],)
+
+        sheet.sort()
+        compare([
+            u'1 7 5 5', u'2 4 5 3', u'3 2 5 6', u'4 2 3 2', u'4 5 6 1'])
+        sheet.sort(columns=[u'c', u'a'])
+        compare([
+            u'4 2 3 2', u'1 7 5 5', u'2 4 5 3', u'3 2 5 6', u'4 5 6 1'])
+        sheet.sort(
+                columns=[u'd', u'b'],
+                cmp=lambda x, y: (x[u'b'] + x[u'd']) - (y[u'b'] + y[u'd']))
+        compare([
+            u'4 2 3 2', u'4 5 6 1', u'2 4 5 3', u'3 2 5 6', u'1 7 5 5'])
+        sheet.sort(
+                columns=[u'd', u'b'],
+                key=lambda x: x[u'b'] + x[u'c'])
+        compare([
+            u'4 2 3 2', u'3 2 5 6', u'2 4 5 3', u'4 5 6 1', u'1 7 5 5'])
+        sheet.sort(
+                columns=[u'd', u'b'],
+                key=lambda x: x[u'b'] + x[u'c'],
+                reverse=True)
+        compare([
+            u'1 7 5 5', u'4 5 6 1', u'2 4 5 3', u'3 2 5 6', u'4 2 3 2'])
+
+        sheet.sort([u'd'])
+        sheet.remove(u'b')
+        compare([u'4 6 1', u'4 3 2', u'2 5 3', u'1 5 5', u'3 5 6'],)
+        sheet.remove(u'd')
+        sheet.remove(u'a')
+        compare([u'6', u'3', u'5', u'5', u'5'])
+        sheet.remove(u'c')
+        self.assertEqual(sheet.captions, [])
+        self.assertEqual(len(sheet), 0)
 
     def test_02(self):
         """ Ok scenario.
