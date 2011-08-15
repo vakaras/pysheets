@@ -11,6 +11,7 @@
 
 :py:class:`Column` is just a view object.
 
+>>> from pysheets.sheet import Sheet, Row, Column
 
 """
 
@@ -25,20 +26,81 @@ class Row(object):
         self.index = index
         self.fields = fields
 
+    def __getitem__(self, caption):
+        return self.fields[self.sheet.captions_index[caption]]
+
+    def __iter__(self):
+        return iter(self.fields)
+
     def append(self, field):
         """ Appends new field to the row.
         """
 
         self.fields.append(field)
 
+    def keys(self):
+        """ Returns :py:attr:`Sheet.captions`.
+        """
+
+        return self.sheet.captions
+
+
+class Column(object):
+    """ Class represinting single sheet column.
+
+    .. note::
+        Column is just a view. It doesn't contain any data.
+
+        >>> sheet = Sheet(rows=[{u'a': 1, u'b': 2}])
+        >>> col1, col2 = sheet.columns
+        >>> col1.caption
+        u'a'
+        >>> col2.caption
+        u'b'
+        >>> sheet.captions[0] = u'c'    # This is just for example.
+        ...                             # You shouldn't modify column
+        ...                             # captions in this way.
+        ...                             # FIXME: Create normal example.
+        >>> col1.caption
+        u'c'
+
+    """
+
+    def __init__(self, sheet, index):
+
+        self.sheet = sheet
+        self.index = index
+
+    def __iter__(self):
+        for row in self.sheet.rows:
+            yield row.fields[self.index]
+
+    @property
+    def caption(self):
+        """ Returns caption of the column.
+        """
+
+        return self.sheet.captions[self.index]
+
+
 
 class Sheet(object):
     """ Class representing simple sheet.
+
+    .. py:attribute:: captions
+
+        List of columns captions. This attribute should be used
+        as read only:
+
+        >>> sheet = Sheet(rows=[{u'a': 1, u'b': 2}])
+        >>> print u', '.join(sheet.captions)
+        a, b
+
     """
 
     def __init__(
             self, file=None, reader_name=None, reader_class=None,
-            rows=None, reader_args=None):
+            rows=None, captions=None, reader_args=None):
         """ Creates sheet.
 
         #.  If ``rows`` is not ``None``, then sheet is created from
@@ -63,19 +125,35 @@ class Sheet(object):
         self.captions_index = {}        # Caption to field index mapping.
         self.rows = []
 
+        if captions:
+            self.add_columns(captions)
+
         if rows is not None:
-            try:
-                self.add_columns(rows[0].keys())
-            except IndexError:
-                pass
-            else:
+            rows = list(rows)
+            if captions:
+                # Rows can be both -- dicts and iterables.
                 for row in rows:
                     self.append(row)
+            else:
+                # All rows have to be dicts.
+                try:
+                    self.add_columns(rows[0].keys())
+                except IndexError:
+                    pass
+                else:
+                    for row in rows:
+                        self.append_dict(row)
         elif file or reader_name or reader_class:
             self.read(file, reader_name, reader_class, reader_args)
 
     def __len__(self):
         return len(self.rows)
+
+    def __iter__(self):
+        return iter(self.rows)
+
+    def __getitem__(self, index):
+        return self.rows[index]
 
     def add_column(self, caption, values=()):
         """ Appends column to the right side of sheet.
@@ -144,3 +222,40 @@ class Sheet(object):
             self.append_iterable(row)
         else:
             self.append_dict(row)
+
+    @property
+    def columns(self):
+        """ Returns iterator through columns in the same order as
+        :py:attr:`captions`.
+
+        """
+
+        for i, caption in enumerate(self.captions):
+            yield Column(self, i)
+
+    def get(self, *captions):
+        """ Returns iterable through subset of columns defined by
+        captions.
+
+        If just one caption is provided than instead of returning
+        iterable of lists, which have just one element, a iterable of
+        elements is returned.
+
+        """
+
+        if len(captions) == 1:
+            caption = captions[0]
+            for row in self.rows:
+                yield row[caption]
+        else:
+            for row in self.rows:
+                yield [row[caption] for caption in captions]
+
+    def filter(self, func):
+        """ Returns iterator through rows, for which ``func`` returns
+        :py:class:`True`.
+        """
+
+        for row in self.rows:
+            if func(row):
+                yield row

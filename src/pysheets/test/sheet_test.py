@@ -3,7 +3,7 @@
 
 import unittest
 
-from pysheets.sheet import Row, Sheet
+from pysheets.sheet import Row, Sheet, Column
 
 
 class RowTest(unittest.TestCase):
@@ -17,11 +17,40 @@ class RowTest(unittest.TestCase):
             """
 
         sheet = DummySheet()
+        sheet.captions = [u'a', u'b', u'c']
+        sheet.captions_index = dict([
+            (v, i) for i, v in enumerate(sheet.captions)])
 
         row = Row(sheet, 0, [1, 2, 3])
         self.assertEqual(row.fields, [1, 2, 3])
-        row.append("2")
-        self.assertEqual(row.fields, [1, 2, 3, "2"])
+        row.append(u'2')
+        self.assertEqual(row.fields, [1, 2, 3, u'2'])
+
+        self.assertEqual(list(row), [1, 2, 3, u'2'])
+        self.assertEqual(row.keys(), [u'a', u'b', u'c'])
+        self.assertEqual(row[u'b'], 2)
+
+
+class ColumnTest(unittest.TestCase):
+    """ Tests for :py:class:`pysheets.sheet.Column`.
+    """
+
+    def test_01(self):
+
+        sheet = Sheet(captions=[u'a', u'b'], rows=[[1, 2], [3, 4], [5, 6],])
+        col1, col2 = sheet.columns
+
+        self.assertEqual(col1.caption, u'a')
+        self.assertEqual(col1.index, 0)
+        self.assertEqual(list(col1), [1, 3, 5])
+        self.assertEqual(col2.caption, u'b')
+        self.assertEqual(col2.index, 1)
+        self.assertEqual(list(col2), [2, 4, 6])
+
+        sheet.captions[1] = u'Foo'
+        self.assertEqual(col2.caption, u'Foo')
+        sheet.rows[1].fields[1] = 3
+        self.assertEqual(list(col2), [2, 3, 6])
 
 
 class SheetTest(unittest.TestCase):
@@ -29,22 +58,45 @@ class SheetTest(unittest.TestCase):
     """
 
     def test_01(self):
-        """ Good scenario.
+        """ Ok scenario.
         """
 
-        sheet = Sheet(rows=[
-            {u'a': 4, u'b': 5, u'c': 6},
-            [4, 2, 3],
-            [2, 4, 5],
-            {u'c': u'haha', u'a': u'caca', u'b': u'dada'},
-            [1, 7, 5],
-            [3, 2, 5],
-            ])
+        sheet = Sheet(
+                captions=[u'a', u'b', u'c'],
+                rows=[
+                    {u'a': 4, u'b': 5, u'c': 6},
+                    [4, 2, 3],
+                    [2, 4, 5],
+                    {u'c': u'haha', u'a': u'caca', u'b': u'dada'},
+                    [1, 7, 5],
+                    [3, 2, 5],
+                    ])
         self.assertEqual(len(sheet), 6)
+        self.assertEqual(sheet.captions, [u'a', u'b', u'c'])
+
+        self.assertEqual(list(sheet), sheet.rows)
+        self.assertEqual(list(sheet[4]), [1, 7, 5])
+        self.assertEqual(list(sheet[-2]), [1, 7, 5])
+        self.assertEqual(
+                [
+                    u' '.join(unicode(field) for field in row)
+                    for row in sheet[1::2]],
+                [u'4 2 3', u'caca dada haha', u'3 2 5'])
+        self.assertEqual(
+                [
+                    u' '.join(unicode(field) for field in row)
+                    for row in sheet.filter(func=lambda x: x.index % 2)],
+                [u'4 2 3', u'caca dada haha', u'3 2 5'])
+        self.assertEqual(
+                list(sheet.get(u'c', u'a')),
+                [[6, 4], [3, 4], [5, 2], [u'haha', u'caca'], [5, 1], [5, 3]]
+                )
+
         sheet.add_column('d', [1, 2, 3, 4, 5, 6])
+        self.assertEqual(list(sheet.get(u'd')), [1, 2, 3, 4, 5, 6])
 
     def test_02(self):
-        """ Good scenario.
+        """ Ok scenario.
         """
 
         sheet = Sheet()
@@ -70,7 +122,7 @@ class SheetTest(unittest.TestCase):
         sheet.append({u'a': 'ddd', u'b': 'lll', u'c': (1, 2, 3)})
 
     def test_03(self):
-        """ Good scenario.
+        """ Ok scenario.
         """
 
         sheet = Sheet(u'foo.csv', rows=[])
@@ -79,9 +131,19 @@ class SheetTest(unittest.TestCase):
         self.assertEqual(sheet.rows, [])
 
     def test_04(self):
-        """ Bad scenario.
+        """ Failure scenario.
         """
 
         sheet = Sheet()
         self.assertRaises(ValueError, sheet.append_iterable, [1, 2, 3])
         self.assertRaises(ValueError, sheet.add_column, u'a', [1])
+
+    def test_05(self):
+        """ Ok scenario.
+        """
+
+        sheet = Sheet(rows=[
+            {u'a': 1, u'b': 2},
+            {u'a': 3, u'b': 4, u'c': 5},
+            {u'a': 6, u'b': 7},])
+        self.assertEqual(set(sheet.captions), set(u'ab'))
