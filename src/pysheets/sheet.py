@@ -20,7 +20,7 @@ class Row(object):
     """ Class representing sheet row.
     """
 
-    def __init__(self, sheet, index, fields):
+    def __init__(self, sheet, fields):
 
         self.sheet = sheet
         self.fields = fields
@@ -132,6 +132,9 @@ class Sheet(object):
         self.captions = []
         self.captions_index = {}        # Caption to field index mapping.
         self.rows = []
+        self.insert_validators = []
+        self.delete_validators = []
+        self.replace_validators = []
 
         if captions:
             self.add_columns(captions)
@@ -163,7 +166,19 @@ class Sheet(object):
     def __getitem__(self, index):
         return self.rows[index]
 
+    def __setitem__(self, index, row):
+
+        replaced_row = self.rows[index]
+        for validator in self.replace_validators:
+            row = validator(self, row, replaced_row)
+        self.rows[index] = Row(
+                self, [row[caption] for caption in self.captions])
+
     def __delitem__(self, index):
+
+        row = self.rows[index]
+        for validator in self.delete_validators:
+            validator(self, row)
         del self.rows[index]
 
     def add_column(self, caption, values=()):
@@ -194,11 +209,11 @@ class Sheet(object):
         :type row: dict-like
         """
 
-        fields = []
-        for caption in self.captions:
-            fields.append(row[caption])
+        for validator in self.insert_validators:
+            row = validator(self, row)
 
-        self.rows.append(Row(self, len(self.rows), fields))
+        self.rows.append(
+                Row(self, [row[caption] for caption in self.captions]))
 
     def append_iterable(self, row):
         """ Appends row to the end of sheet.
@@ -211,8 +226,14 @@ class Sheet(object):
             raise ValueError((
                 u'Columns number mismatch. Expected {0}. Is {1}.'
                 ).format(len(self.captions), len(fields)))
+        elif self.insert_validators:
+            # There are some validators. Converting to dict.
+            self.append_dict(dict([
+                (caption, value)
+                for caption, value in zip(self.captions, row)]))
         else:
-            self.rows.append(Row(self, len(self.rows), fields))
+            # There is no validators. Just appending row.
+            self.rows.append(Row(self, fields))
 
     def append(self, row):
         """ Appends row to the end of sheet.
@@ -231,8 +252,10 @@ class Sheet(object):
             row[self.captions[0]]
         except TypeError:
             self.append_iterable(row)
-        else:
-            self.append_dict(row)
+            return
+        except KeyError:
+            pass
+        self.append_dict(row)
 
     @property
     def columns(self):
@@ -311,3 +334,21 @@ class Sheet(object):
                 return [row.fields[self.captions_index[caption]]
                         for caption in columns]
             self.rows.sort(key=key, **kwargs)
+
+    def add_insert_validator(self, validator):
+        """ Adds validator to insert validators queue.
+        """
+
+        self.insert_validators.append(validator)
+
+    def add_delete_validator(self, validator):
+        """ Adds validator to delete validators queue.
+        """
+
+        self.delete_validators.append(validator)
+
+    def add_replace_validator(self, validator):
+        """ Adds validator to replace validators queue
+        """
+
+        self.replace_validators.append(validator)

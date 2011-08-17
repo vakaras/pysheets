@@ -21,7 +21,7 @@ class RowTest(unittest.TestCase):
         sheet.captions_index = dict([
             (v, i) for i, v in enumerate(sheet.captions)])
 
-        row = Row(sheet, 0, [1, 2, 3])
+        row = Row(sheet, [1, 2, 3])
         self.assertEqual(row.fields, [1, 2, 3])
         row.append(u'2')
         self.assertEqual(row.fields, [1, 2, 3, u'2'])
@@ -102,6 +102,10 @@ class SheetTest(unittest.TestCase):
         column = sheet.get(u'd')
         self.assertEqual(column.index, 3)
         self.assertEqual(list(column), [1, 2, 3, 4, 5, 6])
+
+        self.assertEqual(list(sheet[3]), [u'caca', u'dada', u'haha', 4])
+        sheet[3] = {u'a': 1, u'b': 2, u'c': 3, u'd': 4}
+        self.assertEqual(list(sheet[3]), [1, 2, 3, 4])
 
         def compare(rows):
             self.assertEqual(
@@ -199,3 +203,154 @@ class SheetTest(unittest.TestCase):
             {u'a': 3, u'b': 4, u'c': 5},
             {u'a': 6, u'b': 7},])
         self.assertEqual(set(sheet.captions), set(u'ab'))
+
+    def test_06(self):
+        """ Test non-modifying validators.
+        """
+
+        class ValidationError(Exception):
+            pass
+
+        class UniqueIntegerValidator(object):
+
+            def __init__(self, column):
+                self.values = set()
+                self.column = column
+
+            def insert(self, sheet, row):
+                try:
+                    value = row[self.column] = int(row[self.column])
+                except ValueError:
+                    raise ValidationError((
+                        u'Values of column {0} have to be integers.'
+                        ).format(self.column))
+                if value in self.values:
+                    raise ValidationError((
+                        u'Values of column {0} have to be unique integers.'
+                        ).format(self.column))
+                else:
+                    self.values.add(value)
+                return row
+
+            def delete(self, sheet, row):
+                self.values.remove(row[self.column])
+
+            def replace(self, sheet, row, replaced_row):
+                self.delete(sheet, replaced_row)
+                return self.insert(sheet, row)
+
+        validator = UniqueIntegerValidator('ID')
+        sheet = Sheet(captions=[u'ID'])
+        sheet.add_insert_validator(validator.insert)
+        sheet.add_delete_validator(validator.delete)
+        sheet.add_replace_validator(validator.replace)
+
+        self.assertEqual(sheet.insert_validators, [validator.insert])
+        self.assertEqual(sheet.delete_validators, [validator.delete])
+        self.assertEqual(sheet.replace_validators, [validator.replace])
+
+        self.assertRaises(ValidationError, sheet.append, [u'baba'])
+        self.assertEqual(len(sheet), 0)
+
+        sheet.append([u'2'])
+        sheet.append([u'3'])
+        self.assertEqual(sorted(validator.values), [2, 3])
+        self.assertEqual(sheet[1][u'ID'], 3)
+        self.assertEqual(len(sheet), 2)
+
+        self.assertRaises(ValidationError, sheet.append, [3])
+        self.assertEqual(len(sheet), 2)
+        del sheet[1]
+        self.assertEqual(validator.values, set([2]))
+
+        sheet.append([u'3'])
+        sheet[1] = {u'ID': 4}
+        sheet.append([u'3'])
+
+    def test_07(self):
+        """ Test modifying validators.
+        """
+
+        def name_validator(sheet, row, replaced_row=None):
+            """ Splits name into first name and last name.
+            """
+
+            first_name, last_name = unicode(row[u'Name']).split()
+            row[u'First name'] = first_name.capitalize()
+            row[u'Last name'] = last_name.capitalize()
+            del row[u'Name']
+
+            return row
+
+        sheet = Sheet(captions=[u'ID', u'First name', u'Last name'])
+
+        sheet.add_insert_validator(name_validator)
+        self.assertRaises(ValueError, sheet.append, [u'1', u'Foo Bar'])
+        self.assertRaises(
+                ValueError, sheet.append, {u'ID': 1, u'Name': u'Foo'})
+        self.assertEqual(len(sheet), 0)
+        sheet.append({u'ID': 1, u'Name': u'   fOo  bAR'})
+        self.assertEqual(len(sheet), 1)
+        self.assertEqual(list(sheet[0]), [1, u'Foo', u'Bar'])
+
+        sheet.add_replace_validator(name_validator)
+        sheet[0] = {u'ID': u'0', u'Name': u'bar foo'}
+        self.assertEqual(len(sheet), 1)
+        self.assertEqual(list(sheet[0]), [u'0', u'Bar', u'Foo'])
+
+        class ValidationError(Exception):
+            pass
+
+        class UniqueNameValidator(object):
+            """ Validates if all names in list are unique.
+            """
+
+            def __init__(self):
+                self.values = set()
+                self.counter = 1
+
+            def insert(self, sheet, row):
+                value = (row[u'First name'], row[u'Last name'])
+                if value in self.values:
+                    raise ValidationError(u'Name duplicate')
+                else:
+                    self.values.add(value)
+                row.setdefault(u'ID', unicode(self.counter))
+                self.counter += 1
+                return row
+
+            def delete(self, sheet, row):
+                self.values.remove((row[u'First name'], row[u'Last name']))
+
+            def replace(self, sheet, row, replaced_row):
+                self.delete(sheet, replaced_row)
+                return self.insert(sheet, row)
+
+        validator = UniqueNameValidator()
+        sheet.add_insert_validator(validator.insert)
+        sheet.add_delete_validator(validator.delete)
+        sheet.add_replace_validator(validator.replace)
+
+        self.assertEqual(
+                sheet.insert_validators, [name_validator, validator.insert])
+        self.assertEqual(
+                sheet.delete_validators, [validator.delete])
+        self.assertEqual(
+                sheet.replace_validators,
+                [name_validator, validator.replace])
+
+        sheet.append({u'Name': u'Fooer Barer'})
+        self.assertEqual(
+                list(u', '.join(row) for row in sheet),
+                [u'0, Bar, Foo', u'1, Fooer, Barer'])
+        self.assertRaises(
+                ValidationError, sheet.append, {u'Name': u'Fooer Barer'})
+        del sheet[1]
+        sheet.append({u'Name': u'Fooer Barer'})
+        self.assertEqual(
+                list(u', '.join(row) for row in sheet),
+                [u'0, Bar, Foo', u'2, Fooer, Barer'])
+        sheet[1] = {u'Name': u'fooer barer', u'ID': u'1'}
+        self.assertEqual(
+                list(u', '.join(row) for row in sheet),
+                [u'0, Bar, Foo', u'1, Fooer, Barer'])
