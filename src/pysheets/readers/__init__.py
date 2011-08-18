@@ -1,0 +1,46 @@
+#!/usr/bin/python
+
+
+""" Plugin point for readers.
+"""
+
+
+from pysheets.plugins import MountPoint
+
+
+class SheetReader(object):
+    """ Base class for any sheet reader.
+
+    Plugin manager will look for these **class** attributes:
+
+    +   ``name`` -- unicode string, the full name of reader (this will
+        be used, when displaying messages to users);
+    +   ``short_name`` -- unique (between readers) unicode string (it
+        is used as reader identifier);
+    +   ``file_extensions`` -- tuple of unicode strings (used for file
+        type  guessing; without dot, for example: ``'ods'``);
+    +   ``mime_type`` -- byte string;
+
+    Reader must define method which extracts data from file and
+    ads it to sheet: ``read(sheet, file, create_columns, **kwargs)``.
+
+    +   ``sheet`` -- sheet to which data have to added.
+    +   ``file`` -- unicode string with path to file, or file like object.
+    +   ``create_columns`` -- if True, then reader should create columns
+        from file.
+    +   ``kwargs`` -- other options passed to :py:meth:`Sheet.read`.
+
+    """
+
+    __metaclass__ = MountPoint
+
+
+def init_readers(paths=(), silent=True):
+    """ Initializes PluginManager for readers.
+
+    .. todo::
+        Find out a way to initialize plugins without calling this
+        function.
+    """
+
+    from pysheets.readers.csv import CSVReader

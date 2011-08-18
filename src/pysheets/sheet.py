@@ -16,6 +16,9 @@
 """
 
 
+from pysheets.readers import SheetReader
+
+
 class Row(object):
     """ Class representing sheet row.
     """
@@ -154,8 +157,8 @@ class Sheet(object):
                 else:
                     for row in rows:
                         self.append_dict(row)
-        elif file or reader_name or reader_class:
-            self.read(file, reader_name, reader_class, reader_args)
+        elif file:
+            self.read(file, True, reader_name, reader_class, reader_args)
 
     def __len__(self):
         return len(self.rows)
@@ -180,6 +183,27 @@ class Sheet(object):
         for validator in self.delete_validators:
             validator(self, row)
         del self.rows[index]
+
+    def read(
+            self, file, create_columns=False, reader_name=None,
+            reader_class=None, reader_args=None):
+        """ Reads data from file into sheet.
+
+        :param file: File from which to read data.
+        :type file: unicode or file like object.
+        :param reader_name: Name of the reader to use.
+        :type reader_name: None or unicode.
+        :param reader_class: Class of the reader to use.
+        :type reader_class: None or class.
+        """
+
+        if reader_name:
+            reader = SheetReader.plugins[reader_name]()
+        elif reader_class:
+            reader = reader_class()
+        else:
+            reader = SheetReader.get_by_file(file)
+        reader.read(self, file, create_columns, **(reader_args or {}))
 
     def add_column(self, caption, values=()):
         """ Appends column to the right side of sheet.
