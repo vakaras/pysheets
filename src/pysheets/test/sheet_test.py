@@ -2,8 +2,12 @@
 
 
 import unittest
+import tempfile
+from cStringIO import StringIO
 
+from pysheets.exceptions import IntegrityError
 from pysheets.sheet import Row, Sheet, Column
+from pysheets.readers.csv import CSVReader
 
 
 class RowTest(unittest.TestCase):
@@ -191,7 +195,10 @@ class SheetTest(unittest.TestCase):
         """
 
         sheet = Sheet()
-        self.assertRaises(ValueError, sheet.append_iterable, [1, 2, 3])
+        self.assertRaises(IntegrityError, sheet.append_iterable, [])
+        self.assertRaises(
+                IntegrityError, sheet.append_dict, {u'a': 1, u'b': 2})
+        self.assertRaises(IntegrityError, sheet.append_iterable, [1, 2, 3])
         self.assertRaises(ValueError, sheet.add_column, u'a', [1])
 
     def test_05(self):
@@ -354,3 +361,120 @@ class SheetTest(unittest.TestCase):
         self.assertEqual(
                 list(u', '.join(row) for row in sheet),
                 [u'0, Bar, Foo', u'1, Fooer, Barer'])
+
+    def assertSheet(self, sheet):
+        self.assertEqual(len(sheet), 2)
+        self.assertEqual(
+                sheet.captions, [u'E-Mail', u'Name', u'Phone numbers'])
+        self.assertEqual(
+                [list(row) for row in sheet],
+                [
+                    [
+                        u'foo@example.com',
+                        u'Foo Bar',
+                        u'+37060000000;+37061111111'],
+                    [
+                        u'bar@example.com',
+                        u'Fooer Barer',
+                        u'+37062222222']])
+
+    def test_08(self):
+
+        data = StringIO('''\
+"Name";"E-Mail";"Phone numbers"
+"Foo Bar";"foo@example.com";"+37060000000;+37061111111"
+"Fooer Barer";"bar@example.com";"+37062222222"\
+''')
+        sheet = Sheet(data, reader_name='CSV')
+        self.assertSheet(sheet)
+
+    def test_09(self):
+
+        data = StringIO('''\
+`Name`&`E-Mail`&`Phone numbers`
+`Foo Bar`&`foo@example.com`&`+37060000000;+37061111111`
+`Fooer Barer`&`bar@example.com`&`+37062222222`\
+''')
+        sheet = Sheet(
+                data, reader_name='CSV',
+                reader_args={'delimiter': '&', 'quotechar': '`'})
+        self.assertSheet(sheet)
+
+    def test_10(self):
+
+        data = ('''\
+`Name`&`E-Mail`&`Phone numbers`
+`Foo Bar`&`foo@example.com`&`+37060000000;+37061111111`
+`Fooer Barer`&`bar@example.com`&`+37062222222`\
+''')
+        t, file = tempfile.mkstemp(suffix='.csv')
+        with open(file, 'wb') as fp:
+            fp.write(data)
+
+        reader = CSVReader()
+        sheet = Sheet(
+                file.decode('utf-8'), reader=CSVReader(),
+                reader_args={'delimiter': '&', 'quotechar': '`'})
+        self.assertSheet(sheet)
+
+    def test_11(self):
+
+        data = StringIO('''\
+`Name`&`E-Mail`&`Phone numbers`
+`Foo Bar`&`foo@example.com`&`+37060000000;+37061111111`
+`Fooer Barer`&`bar@example.com`&`+37062222222`\
+''')
+        sheet = Sheet(captions=[u'Name'])
+        sheet.read(
+                data, reader_name='CSV', create_columns=True,
+                reader_args={'delimiter': '&', 'quotechar': '`'})
+        self.assertEqual(len(sheet), 2)
+        self.assertEqual(
+                sheet.captions, [u'Name', u'E-Mail', u'Phone numbers'])
+        self.assertEqual(
+                [list(row) for row in sheet],
+                [
+                    [
+                        u'Foo Bar',
+                        u'foo@example.com',
+                        u'+37060000000;+37061111111'],
+                    [
+                        u'Fooer Barer',
+                        u'bar@example.com',
+                        u'+37062222222']])
+
+    def test_12(self):
+
+        data = StringIO('''\
+`Name`&`E-Mail`&`Phone numbers`
+`Foo Bar`&`foo@example.com`&`+37060000000;+37061111111`
+`Fooer Barer`&`bar@example.com`&`+37062222222`\
+''')
+        sheet = Sheet(captions=[u'Name'])
+        sheet.read(
+                data, reader_name='CSV',
+                reader_args={'delimiter': '&', 'quotechar': '`'})
+        self.assertEqual(len(sheet), 2)
+        self.assertEqual(
+                sheet.captions, [u'Name'])
+        self.assertEqual(
+                [list(row) for row in sheet],
+                [[u'Foo Bar',], [u'Fooer Barer',]])
+
+
+    def test_13(self):
+
+        data = ('''\
+`Name`&`E-Mail`&`Phone numbers`
+`Foo Bar`&`foo@example.com`&`+37060000000;+37061111111`
+`Fooer Barer`&`bar@example.com`&`+37062222222`\
+''')
+        t, file = tempfile.mkstemp(suffix='.csv')
+        with open(file, 'wb') as fp:
+            fp.write(data)
+
+        reader = CSVReader()
+        sheet = Sheet(
+                file.decode('utf-8'),
+                reader_args={'delimiter': '&', 'quotechar': '`'})
+        self.assertSheet(sheet)

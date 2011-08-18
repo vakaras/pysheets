@@ -21,7 +21,7 @@ class CSVReader(SheetReader):
     file_extensions = [u'csv',]
     mime_type = 'text/csv'
 
-    def _read(
+    def read(
             self, sheet, file, create_columns=True,
             dialect='excel', delimiter=';', quotechar='\"'):
         """ Reads data from given file into sheet.
@@ -35,23 +35,24 @@ class CSVReader(SheetReader):
                 file, dialect=dialect, delimiter=delimiter,
                 quotechar=quotechar)
 
-        for caption in sorted(
-                (set(reader.fieldnames) - set(sheet.captions))):
-            sheet.add_column(caption.decode('utf-8'))
+        if create_columns:
+            for caption in sorted(
+                    (set(reader.fieldnames) - set(sheet.captions))):
+                sheet.add_column(caption.decode('utf-8'))
 
         for row in reader:
             sheet.append_dict(dict([
                 (key.decode('utf-8'), value.decode('utf-8'))
                 for key, value in row.items()]))
 
-    @functools.wraps(_read)
-    def read(self, sheet, file, *args, **kwargs):
+    @functools.wraps(read)
+    def __call__(self, sheet, file, *args, **kwargs):
         """ Wrapper function, which ensures that file is file like
         object.
         """
 
         if isinstance(file, unicode):
             with open(file, 'rb') as fp:
-                self._read(sheet, fp, *args, **kwargs)
+                self.read(sheet, fp, *args, **kwargs)
         else:
-            self._read(sheet, file, *args, **kwargs)
+            self.read(sheet, file, *args, **kwargs)

@@ -21,8 +21,7 @@ class SheetReader(object):
         type  guessing; without dot, for example: ``'ods'``);
     +   ``mime_type`` -- byte string;
 
-    Reader must define method which extracts data from file and
-    ads it to sheet: ``read(sheet, file, create_columns, **kwargs)``.
+    Reader have to be a callable, which gets arguments:
 
     +   ``sheet`` -- sheet to which data have to added.
     +   ``file`` -- unicode string with path to file, or file like object.
@@ -35,12 +34,4 @@ class SheetReader(object):
     __metaclass__ = MountPoint
 
 
-def init_readers(paths=(), silent=True):
-    """ Initializes PluginManager for readers.
-
-    .. todo::
-        Find out a way to initialize plugins without calling this
-        function.
-    """
-
-    from pysheets.readers.csv import CSVReader
+__all__ = ['csv']

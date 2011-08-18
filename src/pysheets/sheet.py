@@ -16,6 +16,8 @@
 """
 
 
+from pysheets.exceptions import IntegrityError
+import pysheets.readers
 from pysheets.readers import SheetReader
 
 
@@ -110,7 +112,7 @@ class Sheet(object):
     """
 
     def __init__(
-            self, file=None, reader_name=None, reader_class=None,
+            self, file=None, reader_name=None, reader=None,
             rows=None, captions=None, reader_args=None):
         """ Creates sheet.
 
@@ -118,17 +120,17 @@ class Sheet(object):
             data provided at ``rows``.
         #.  If ``file`` is not ``None``, then data is read from it.
 
-        If ``reader_name`` and ``reader_class`` is None, then it is
-        expected that file is an unicode string with path to a file to
-        read information from and which reader to use is tried to guess
-        by file name extension.
+        If ``reader_name`` and ``reader`` is None, then it is expected
+        that file is an unicode string with path to a file to read
+        information from and which reader to use is tried to guess by
+        file name extension.
 
         :param file: File from which to read data.
         :type file: unicode or file like object.
         :param reader_name: Name of the reader to use.
         :type reader_name: None or unicode.
-        :param reader_class: Class of the reader to use.
-        :type reader_class: None or class.
+        :param reader: Callable to use for reading file.
+        :type reader: None or callable.
 
         """
 
@@ -158,7 +160,7 @@ class Sheet(object):
                     for row in rows:
                         self.append_dict(row)
         elif file:
-            self.read(file, True, reader_name, reader_class, reader_args)
+            self.read(file, True, reader_name, reader, reader_args)
 
     def __len__(self):
         return len(self.rows)
@@ -186,24 +188,23 @@ class Sheet(object):
 
     def read(
             self, file, create_columns=False, reader_name=None,
-            reader_class=None, reader_args=None):
+            reader=None, reader_args=None):
         """ Reads data from file into sheet.
 
         :param file: File from which to read data.
         :type file: unicode or file like object.
         :param reader_name: Name of the reader to use.
         :type reader_name: None or unicode.
-        :param reader_class: Class of the reader to use.
-        :type reader_class: None or class.
+        :param reader: Callable to use for reading file.
+        :type reader: None or callable.
         """
 
-        if reader_name:
-            reader = SheetReader.plugins[reader_name]()
-        elif reader_class:
-            reader = reader_class()
-        else:
-            reader = SheetReader.get_by_file(file)
-        reader.read(self, file, create_columns, **(reader_args or {}))
+        if reader is None:
+            if reader_name:
+                reader = SheetReader.plugins[reader_name]()
+            else:
+                reader = SheetReader.plugins.get_by_file(file)()
+        reader(self, file, create_columns, **(reader_args or {}))
 
     def add_column(self, caption, values=()):
         """ Appends column to the right side of sheet.
@@ -233,6 +234,10 @@ class Sheet(object):
         :type row: dict-like
         """
 
+        if not self.captions:
+            raise IntegrityError(
+                    u'Adding data to sheet with zero columns.')
+
         for validator in self.insert_validators:
             row = validator(self, row)
 
@@ -244,6 +249,10 @@ class Sheet(object):
 
         :type row: iterable
         """
+
+        if not self.captions:
+            raise IntegrityError(
+                    u'Adding data to sheet with zero columns.')
 
         fields = list(row)
         if len(fields) != len(self.captions):
@@ -376,3 +385,11 @@ class Sheet(object):
         """
 
         self.replace_validators.append(validator)
+
+
+# Init built-in readers. (Silently.)
+for reader_module in pysheets.readers.__all__:
+    try:
+        __import__('pysheets.readers', fromlist=[reader_module], level=0)
+    except ImportError:
+        pass
