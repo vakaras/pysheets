@@ -9,6 +9,7 @@ from __future__ import absolute_import
 from csv import DictReader
 import functools
 
+from pysheets.exceptions import InvalidFileError
 from pysheets.readers import SheetReader
 
 
@@ -34,6 +35,9 @@ class CSVReader(SheetReader):
         reader = DictReader(
                 file, dialect=dialect, delimiter=delimiter,
                 quotechar=quotechar)
+        if not reader.fieldnames:
+            raise InvalidFileError(
+                    u'Trying to read empty or badly formated sheet.')
 
         if create_columns:
             captions_set = set(sheet.captions)

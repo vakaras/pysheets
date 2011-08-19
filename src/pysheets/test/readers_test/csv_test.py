@@ -5,7 +5,7 @@ import unittest
 import os
 from cStringIO import StringIO
 
-from pysheets.exceptions import IntegrityError
+from pysheets.exceptions import IntegrityError, InvalidFileError
 from pysheets.readers.csv import CSVReader
 from pysheets.sheet import Sheet
 
@@ -103,3 +103,12 @@ class CSVReaderTest(unittest.TestCase):
         self.assertEqual(
                 [list(row) for row in sheet],
                 [[u'Foo Bar'], [u'Fooer Barer']])
+
+    def test_06(self):
+
+        data = StringIO('''''')
+        reader = CSVReader()
+        sheet = Sheet()
+
+        self.assertRaises(
+                InvalidFileError, reader, sheet, data, create_columns=False)
