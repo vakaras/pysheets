@@ -1,6 +1,9 @@
 .installed.cfg
 .mr.developer.cfg
 .coverage
+*.pyc
+*.egg-info/
+.~lock.*
 bin/buildout
 bin/coverage
 bin/ctags
@@ -11,9 +14,7 @@ bin/sphinx-build
 bin/sphinx-quickstart
 bin/test
 bin/rst2pdf
-*.egg-info/
 develop-eggs/
 parts/
 docs/build/
-*.pyc
 var

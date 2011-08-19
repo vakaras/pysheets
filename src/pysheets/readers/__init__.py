@@ -34,4 +34,4 @@ class SheetReader(object):
     __metaclass__ = MountPoint
 
 
-__all__ = ['csv']
+__all__ = ['csv', 'ods']

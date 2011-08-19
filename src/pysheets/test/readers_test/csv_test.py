@@ -11,7 +11,7 @@ from pysheets.sheet import Sheet
 
 
 class CSVReaderTest(unittest.TestCase):
-    """ Tests for :py:class:`pysheets.plugins.PluginManager`.
+    """ Tests for :py:class:`pysheets.readers.csv.CSVReader`.
     """
 
     def assertSheet(self, sheet):
@@ -86,3 +86,20 @@ class CSVReaderTest(unittest.TestCase):
         self.assertEqual(len(sheet), 2)
         self.assertEqual(
                 sheet.captions, [u'Name', u'E-Mail', u'Phone numbers'])
+
+    def test_05(self):
+
+        file = os.path.join(os.path.dirname(__file__), 'files', 'sheet.csv')
+
+        reader = CSVReader()
+        sheet = Sheet()
+        sheet.add_column(u'Name')
+        self.assertEqual(len(sheet), 0)
+        self.assertEqual(sheet.captions, [u'Name'])
+        reader(sheet, file.decode('utf-8'), create_columns=False)
+        self.assertEqual(len(sheet), 2)
+        self.assertEqual(
+                sheet.captions, [u'Name'])
+        self.assertEqual(
+                [list(row) for row in sheet],
+                [[u'Foo Bar'], [u'Fooer Barer']])
