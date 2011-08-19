@@ -17,17 +17,17 @@ class CSVReaderTest(unittest.TestCase):
     def assertSheet(self, sheet):
         self.assertEqual(len(sheet), 2)
         self.assertEqual(
-                sheet.captions, [u'E-Mail', u'Name', u'Phone numbers'])
+                sheet.captions, [u'Name', u'E-Mail', u'Phone numbers'])
         self.assertEqual(
                 [list(row) for row in sheet],
                 [
                     [
-                        u'foo@example.com',
                         u'Foo Bar',
+                        u'foo@example.com',
                         u'+37060000000;+37061111111'],
                     [
-                        u'bar@example.com',
                         u'Fooer Barer',
+                        u'bar@example.com',
                         u'+37062222222']])
 
     def test_01(self):
@@ -85,4 +85,4 @@ class CSVReaderTest(unittest.TestCase):
         reader(sheet, file.decode('utf-8'))
         self.assertEqual(len(sheet), 2)
         self.assertEqual(
-                sheet.captions, [u'E-Mail', u'Name', u'Phone numbers'])
+                sheet.captions, [u'Name', u'E-Mail', u'Phone numbers'])

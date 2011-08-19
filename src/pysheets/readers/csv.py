@@ -36,9 +36,11 @@ class CSVReader(SheetReader):
                 quotechar=quotechar)
 
         if create_columns:
-            for caption in sorted(
-                    (set(reader.fieldnames) - set(sheet.captions))):
-                sheet.add_column(caption.decode('utf-8'))
+            captions_set = set(sheet.captions)
+            for caption in reader.fieldnames:
+                caption = caption.decode('utf-8')
+                if caption not in captions_set:
+                    sheet.add_column(caption)
 
         for row in reader:
             sheet.append_dict(dict([
