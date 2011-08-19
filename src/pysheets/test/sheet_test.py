@@ -2,7 +2,7 @@
 
 
 import unittest
-import tempfile
+import os
 from cStringIO import StringIO
 
 from pysheets.exceptions import IntegrityError
@@ -402,14 +402,9 @@ class SheetTest(unittest.TestCase):
 
     def test_10(self):
 
-        data = ('''\
-`Name`&`E-Mail`&`Phone numbers`
-`Foo Bar`&`foo@example.com`&`+37060000000;+37061111111`
-`Fooer Barer`&`bar@example.com`&`+37062222222`\
-''')
-        t, file = tempfile.mkstemp(suffix='.csv')
-        with open(file, 'wb') as fp:
-            fp.write(data)
+        file = os.path.join(
+                os.path.dirname(__file__),
+                'readers_test', 'files', 'sheet_amp.csv')
 
         reader = CSVReader()
         sheet = Sheet(
@@ -464,14 +459,9 @@ class SheetTest(unittest.TestCase):
 
     def test_13(self):
 
-        data = ('''\
-`Name`&`E-Mail`&`Phone numbers`
-`Foo Bar`&`foo@example.com`&`+37060000000;+37061111111`
-`Fooer Barer`&`bar@example.com`&`+37062222222`\
-''')
-        t, file = tempfile.mkstemp(suffix='.csv')
-        with open(file, 'wb') as fp:
-            fp.write(data)
+        file = os.path.join(
+                os.path.dirname(__file__),
+                'readers_test', 'files', 'sheet_amp.csv')
 
         reader = CSVReader()
         sheet = Sheet(
