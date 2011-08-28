@@ -409,3 +409,151 @@ set([2])
 *Behind the scene*: A row, which is not associated with sheet is just a
 simple Python :py:class:`dict`, which if passed all validators is converted
 to :py:class:`pysheets.Row` object and added to sheet.
+
+-----------
+SpreadSheet
+-----------
+
+>>> from pysheets.spreadsheet import SpreadSheet
+>>> ss = SpreadSheet()
+>>> ss.names
+[]
+>>> len(ss)
+0
+>>> sheet = ss.create_sheet(u'sheet1')
+>>> ss.names
+[u'sheet1']
+>>> len(ss)
+1
+>>> list(ss) == [sheet]
+True
+>>> sheet.spreadsheet is ss
+True
+>>> sheet.name
+u'sheet1'
+>>> ss[u'sheet1'] is sheet
+True
+
+Adding validators to all sheets:
+
+>>> def validator_creator():
+...     validator = UniqueIntegerValidator(u'ID')
+...     return validator.insert, validator.delete, validator.replace
+>>> ss.add_sheet_validator_creator(validator_creator)
+>>> ss.add_sheet_validator(split_name, 'insert', 'replace')
+
+>>> sheet.insert_validators
+[<bound method UniqueIntegerValidator.insert of <UniqueIntegerValidator object at 0x...>>, <function split_name at 0x...>]
+>>> sheet.delete_validators
+[<bound method UniqueIntegerValidator.delete of <UniqueIntegerValidator object at 0x...>>]
+>>> sheet.replace_validators
+[<bound method UniqueIntegerValidator.replace of <UniqueIntegerValidator object at 0x...>>, <function split_name at 0x...>]
+
+Adding spreadsheet validators:
+
+>>> def integer_gid(spreadsheet, sheet, row, replaced_row=None):
+...     try:
+...         row[u'GID'] = int(row[u'GID'])
+...     except ValueError:
+...         raise ValidationError((
+...             u'Values of column {0} have to be integers.'
+...             ).format(self.column))
+...     return row
+>>> ss.add_validator(integer_gid, 'insert_row', 'replace_row')
+
+>>> class UniqueIntegerValidator2(object):
+...
+...     def __init__(self, column):
+...         self.values = set()
+...         self.column = column
+...
+...     def insert(self, spreadsheet, sheet, row):
+...         value = row[self.column]
+...         if value in self.values:
+...             raise ValidationError((
+...                 u'Values of column {0} have to be unique integers.'
+...                 ).format(self.column))
+...         else:
+...             self.values.add(value)
+...         return row
+...
+...     def delete(self, spreadsheet, sheet, row):
+...         self.values.remove(row[self.column])
+...
+...     def replace(self, spreadsheet, sheet, row, replaced_row):
+...         self.delete(sheet, replaced_row)
+...         return self.insert(sheet, row)
+
+
+>>> row_validator = UniqueIntegerValidator2(u'GID')
+>>> ss.add_validator(row_validator.insert, 'insert_row')
+>>> ss.add_validator(row_validator.delete, 'delete_row')
+>>> ss.add_validator(row_validator.replace, 'replace_row')
+
+>>> sheet1 = ss[u'sheet1']
+>>> sheet1.add_columns([
+...     u'ID', u'GID', u'First name', u'Last name'])
+>>> sheet2 = ss.create_sheet(
+...     u'sheet2',
+...     captions=[u'ID', u'GID', u'First name', u'Last name'])
+>>> sheet1.append({u'ID': 1, u'GID': 1, u'Name': u'Foo Bar'})
+>>> sheet1.append({u'ID': 2, u'GID': 2, u'Name': u'Foo Bar'})
+>>> sheet1.append({u'ID': 2, u'GID': 3, u'Name': u'Foo Bar'})
+Traceback (most recent call last):
+...
+ValidationError: Values of column ID have to be unique integers.
+>>> sheet2.append({u'ID': 4, u'GID': 4, u'Name': u'Foo Bar'})
+>>> sheet2.append({u'ID': 4, u'GID': 3, u'Name': u'Foo Bar'})
+Traceback (most recent call last):
+...
+ValidationError: Values of column ID have to be unique integers.
+>>> sheet2.append({u'ID': 3, u'GID': 3, u'Name': u'Foo Bar'})
+>>> sheet2.append({u'ID': 2, u'GID': 2, u'Name': u'Foo Bar'})
+Traceback (most recent call last):
+...
+ValidationError: Values of column GID have to be unique integers.
+
+>>> class SheetOrder(object):
+...
+...     def __init__(self):
+...         self.numbers = set()
+...
+...     def add(self, spreadsheet, name, sheet):
+...         number = int(name)
+...         if number != max(self.numbers or [0]) + 1:
+...             raise ValidationError(u'Wrong sheet name.')
+...         else:
+...             self.numbers.add(number)
+...         return sheet, unicode(number)
+...
+...     def remove(self, spreadsheet, name, sheet):
+...         number = int(name)
+...         if number != max(self.numbers):
+...             raise ValidationError(u'Cannot remove sheet.')
+...         else:
+...             self.numbers.remove(number)
+
+>>> ss2 = SpreadSheet()
+>>> sheet_validator = SheetOrder()
+>>> ss2.add_validator(sheet_validator.add, 'add_sheet')
+>>> ss2.add_validator(sheet_validator.remove, 'remove_sheet')
+>>> ss2.create_sheet(u'sheet1')
+Traceback (most recent call last):
+...
+ValueError: invalid literal for int() with base 10: 'sheet1'
+>>> ss2.create_sheet(u'    1   ').name
+u'1'
+>>> ss2.create_sheet(u'  1        \t   ')
+Traceback (most recent call last):
+...
+ValidationError: Wrong sheet name.
+>>> ss2.create_sheet(2).name
+u'2'
+>>> del ss2[u'1']
+Traceback (most recent call last):
+...
+ValidationError: Cannot remove sheet.
+>>> sheet = ss2[u'2']
+>>> del ss2[u'2']
+>>> print sheet.name
+None

@@ -140,6 +140,9 @@ class Sheet(object):
         self.insert_validators = []
         self.delete_validators = []
         self.replace_validators = []
+        self.name = None                # Sheet name in spreadsheet.
+        self.spreadsheet = None         # Spreadsheet, to which this
+                                        # sheet belongs.
 
         if captions:
             self.add_columns(captions)
@@ -176,6 +179,9 @@ class Sheet(object):
         replaced_row = self.rows[index]
         for validator in self.replace_validators:
             row = validator(self, row, replaced_row)
+        if self.name:
+            row = self.spreadsheet.validate_row_replacement(
+                    self, row, replaced_row)
         self.rows[index] = Row(
                 self, [row[caption] for caption in self.captions])
 
@@ -184,6 +190,8 @@ class Sheet(object):
         row = self.rows[index]
         for validator in self.delete_validators:
             validator(self, row)
+        if self.name:
+            row = self.spreadsheet.validate_row_deletion(self, row)
         del self.rows[index]
 
     def read(
@@ -240,6 +248,9 @@ class Sheet(object):
 
         for validator in self.insert_validators:
             row = validator(self, row)
+        if self.name:
+            # If sheet is assigned to spreadsheet.
+            row = self.spreadsheet.validate_row_insertion(self, row)
 
         self.rows.append(
                 Row(self, [row[caption] for caption in self.captions]))
@@ -402,6 +413,24 @@ class Sheet(object):
                 raise ValueError(
                         u'Unknown validator type: \"{0}\".'.format(
                             validator_type))
+
+    def set_spreadsheet(self, spreadsheet, name):
+        """ Links sheet to spreadsheet.
+        """
+
+        if self.name:
+            raise IntegrityError(u'Sheet is already linked to spreadsheet.')
+        self.spreadsheet = spreadsheet
+        self.name = name
+
+    def unset_spreadsheet(self):
+        """ Unlinks sheet from spreadsheet.
+        """
+
+        if self.name is None:
+            raise IntegrityError(u'Sheet is not linked to spreadsheet.')
+        self.spreadsheet = None
+        self.name = None
 
 
 # Init built-in readers. (Silently.)
