@@ -18,11 +18,11 @@ explicitly by name or class:
 ... ''')
 >>> sheet = Sheet(data, u'CSV')
 >>> sheet.captions
-[u'E-Mail', u'Name', u'Phone numbers']
+[u'Name', u'E-Mail', u'Phone numbers']
 >>> for row in sheet:
 ...     print list(row)
-[u'foo@example.com', u'Foo Bar', u'+37060000000;+37061111111']
-[u'bar@example.com', u'Fooer Barer', u'+37062222222']
+[u'Foo Bar', u'foo@example.com', u'+37060000000;+37061111111']
+[u'Fooer Barer', u'bar@example.com', u'+37062222222']
 
 
 --------------------------
@@ -378,37 +378,77 @@ set([2])
 >>> sheet.add_insert_validator(split_name)
 >>> sheet.add_replace_validator(split_name)
 
-..
-    >>> sheet.read(data, u'CSV',
-    ...            create_columns=True)     # Create columns, which doesn't 
-    ...                                     # exist.
-    >>> print u' '.join(sorted(sheet.captions))
-    E-mail First name Last name Phone numbers
-    >>> sheet.append({
-    ...     u'Name': u'Bla bla',
-    ...     u'E-mail': u'b@g.com',
-    ...     u'Phone numbers': u''})
-    >>> sheet.get(u'First name')[-1]
-    u'Bla'
-    >>> sheet[-1] = {
-    ...     u'Name': u'Ku Foo',
-    ...     u'E-mail': u'b@g.com',
-    ...     u'Phone numbers': u''}
-    >>> sheet.get(u'Last name')[-1]
-    u'Foo'
+>>> from cStringIO import StringIO
+>>> data = StringIO('''\
+... "Name";"E-Mail";"Phone numbers"
+... "Foo Bar";"foo@example.com";"+37060000000;+37061111111"
+... "Fooer Barer";"bar@example.com";"+37062222222"\
+... ''')
+>>> sheet.read(data, reader_name=u'CSV',
+...            create_columns=False)    # Create columns, which doesn't
+...                                     # exist.
+>>> print u' '.join(sorted(sheet.captions))
+First name Last name
+>>> for row in sheet:
+...     print u', '.join(row)
+Foo, Bar
+Fooer, Barer
+>>> sheet.append({
+...     u'Name': u'Bla bla',
+...     u'E-mail': u'b@g.com',
+...     u'Phone numbers': u''})
+>>> sheet.get(u'First name')[-1]
+u'Bla'
+>>> sheet[-1] = {
+...     u'Name': u'Ku Foo',
+...     u'E-mail': u'b@g.com',
+...     u'Phone numbers': u''}
+>>> sheet.get(u'Last name')[-1]
+u'Foo'
 
-    .. note::
-        When using modifiers, which change columns, only rows in dict
-        format can be used:
+.. note::
+    When using modifiers, which change columns, only rows in dict
+    format should be used:
 
-        >>> sheet.append([u'Foo Bar'] * 4)
-        Traceback (most recent call last):
-        ...
-        ValueError: Columns number mismatch. Expected 5. Is 4.
+    >>> sheet.append([u'Foo Bar'] * 4)
+    Traceback (most recent call last):
+    ...
+    ValueError: Columns number mismatch. Expected 5. Is 4.
 
 *Behind the scene*: A row, which is not associated with sheet is just a
 simple Python :py:class:`dict`, which if passed all validators is converted
 to :py:class:`pysheets.Row` object and added to sheet.
+
+-------------------
+Readers and writers
+-------------------
+
+A **Reader** have to be a class inherited from
+:py:class:`readers.SheetReader` and it should define:
+
++   ``name`` – unicode string, the full name of reader (this will be used,
+    when displaying messages to users);
++   ``short_name`` – unique (between readers) unicode string (it is used
+    as reader identifier);
++   ``file_extensions`` – tuple of unicode strings (used for file type
+    guessing);
++   ``mime_type`` – byte string;
++   ``read(sheet, file, create_columns, **kwargs)`` – method, which
+    extracts data from file and adds it to sheet.
+
+
+A **Writer** have to be a class inherited from
+:py:class:`writers.SheetWriter` and it should define:
+
++   ``name`` – unicode string, the full name of writer (this will be used,
+    when displaying messages to users);
++   ``short_name`` – unique (between writers) unicode string (it is used
+    as writer identifier);
++   ``file_extensions`` – tuple of unicode strings (used for file type
+    guessing);
++   ``mime_type`` – byte string;
++   ``write(sheet, file, **kwargs)`` – method, which
+    extracts data from file and adds it to sheet.
 
 -----------
 SpreadSheet
