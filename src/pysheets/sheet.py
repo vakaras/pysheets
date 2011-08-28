@@ -386,6 +386,23 @@ class Sheet(object):
 
         self.replace_validators.append(validator)
 
+    def add_validator(self, validator, *types):
+        """ Adds validator to validators lists mentioned in ``types``.
+
+        """
+
+        for validator_type in types:
+            if validator_type == 'insert':
+                self.add_insert_validator(validator)
+            elif validator_type == 'delete':
+                self.add_delete_validator(validator)
+            elif validator_type == 'replace':
+                self.add_replace_validator(validator)
+            else:
+                raise ValueError(
+                        u'Unknown validator type: \"{0}\".'.format(
+                            validator_type))
+
 
 # Init built-in readers. (Silently.)
 for reader_module in pysheets.readers.__all__:

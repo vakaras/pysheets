@@ -246,6 +246,11 @@ class SheetTest(unittest.TestCase):
                 self.delete(sheet, replaced_row)
                 return self.insert(sheet, row)
 
+        def validate_nothing(sheet, row, replaced_row=None):
+            """ A dummy function for testing.
+            """
+            return row
+
         validator = UniqueIntegerValidator('ID')
         sheet = Sheet(captions=[u'ID'])
         sheet.add_insert_validator(validator.insert)
@@ -255,6 +260,21 @@ class SheetTest(unittest.TestCase):
         self.assertEqual(sheet.insert_validators, [validator.insert])
         self.assertEqual(sheet.delete_validators, [validator.delete])
         self.assertEqual(sheet.replace_validators, [validator.replace])
+
+        sheet.add_validator(validate_nothing)
+        self.assertEqual(sheet.insert_validators, [validator.insert])
+        self.assertEqual(sheet.delete_validators, [validator.delete])
+        self.assertEqual(sheet.replace_validators, [validator.replace])
+
+        sheet.add_validator(validate_nothing, 'insert', 'delete', 'replace')
+        self.assertEqual(sheet.insert_validators,
+                         [validator.insert, validate_nothing])
+        self.assertEqual(sheet.delete_validators,
+                         [validator.delete, validate_nothing])
+        self.assertEqual(sheet.replace_validators,
+                         [validator.replace, validate_nothing])
+        self.assertRaises(
+                ValueError, sheet.add_validator, validate_nothing, 'foo')
 
         self.assertRaises(ValidationError, sheet.append, [u'baba'])
         self.assertEqual(len(sheet), 0)
@@ -291,7 +311,8 @@ class SheetTest(unittest.TestCase):
 
         sheet = Sheet(captions=[u'ID', u'First name', u'Last name'])
 
-        sheet.add_insert_validator(name_validator)
+        sheet.add_validator(name_validator, 'insert', 'replace')
+
         self.assertRaises(ValueError, sheet.append, [u'1', u'Foo Bar'])
         self.assertRaises(
                 ValueError, sheet.append, {u'ID': 1, u'Name': u'Foo'})
@@ -300,7 +321,6 @@ class SheetTest(unittest.TestCase):
         self.assertEqual(len(sheet), 1)
         self.assertEqual(list(sheet[0]), [1, u'Foo', u'Bar'])
 
-        sheet.add_replace_validator(name_validator)
         sheet[0] = {u'ID': u'0', u'Name': u'bar foo'}
         self.assertEqual(len(sheet), 1)
         self.assertEqual(list(sheet[0]), [u'0', u'Bar', u'Foo'])
