@@ -220,3 +220,56 @@ class SpreadSheet(object):
         for validator in self.validators['replace_row']:
             row = validator(self, sheet, row, replaced_row)
         return row
+
+    def load(self, sheet, columns=None, name=None):
+        """ Loads sheet's data into spreadsheet. If ``columns`` is
+        not ``None`` then splits sheet into multiple sheets.
+
+        If ``columns`` is unicode, then rows with different column,
+        which captions is ``columns``, value are put into different
+        sheets. Sheets names are formed by converting that values
+        into unicode.
+
+        If ``columns`` is an iterable of unicode, then acts similarly.
+
+        """
+
+        if columns is None:
+            new_sheet = self.create_sheet(
+                    unicode(name), captions=sheet.captions)
+            for row in sheet:
+                new_sheet.append_iterable(row)
+            return
+
+        if isinstance(columns, unicode):
+            columns = [columns]
+
+        sheets = {}
+        for key, row in zip(sheet.get(*columns), sheet):
+            key = unicode(key)
+            if key not in sheets:
+                sheets[key] = self.create_sheet(
+                        key, captions=sheet.captions)
+            sheets[key].append_iterable(row)
+
+    def join(self, caption):
+        """ Joins all sheets into one. Sheets names are stored in
+        column with given ``caption``.
+
+        .. warning::
+            An assumption is made, that all sheets have the same columns.
+        """
+
+        if not self.names:
+            # No sheets in spreadsheet, return empty sheet.
+            return Sheet(captions=[caption])
+
+        assigned_sheet = self.sheets[self.names[0]]
+        sheet = Sheet(captions=assigned_sheet.captions + [caption])
+
+        for assigned_sheet in self.sheets.values():
+            for row in assigned_sheet.row_dicts:
+                row[caption] = assigned_sheet.name
+                sheet.append_dict(row)
+
+        return sheet

@@ -314,6 +314,14 @@ class Sheet(object):
         for i in range(len(self.captions)):
             yield Column(self, i)
 
+    @property
+    def row_dicts(self):
+        """ Returns iterator through rows stored in dicts.
+        """
+
+        for row in self.rows:
+            yield dict(zip(self.captions, row))
+
     def get(self, *captions):
         """ Returns iterable through subset of columns defined by
         captions.

@@ -597,3 +597,45 @@ ValidationError: Cannot remove sheet.
 >>> del ss2[u'2']
 >>> print sheet.name
 None
+
+---------------------
+Joining and splitting
+---------------------
+
+>>> sheet = Sheet()
+>>> sheet.add_columns([u'Type', u'Number'])
+>>> for i in range(20):
+...     sheet.append([i % 3, unicode(i)])
+>>> for tp, num in sheet:
+...     print tp, num
+0 0
+1 1
+2 2
+0 3
+1 4
+2 5
+0 6
+1 7
+2 8
+0 9
+1 10
+2 11
+0 12
+1 13
+2 14
+0 15
+1 16
+2 17
+0 18
+1 19
+>>> ss = SpreadSheet()
+>>> ss.load(sheet, u'Type')
+>>> for sheet in ss:
+...     print [sheet.name, u', '.join(row[u'Number'] for row in sheet)]
+[u'0', u'0, 3, 6, 9, 12, 15, 18']
+[u'1', u'1, 4, 7, 10, 13, 16, 19']
+[u'2', u'2, 5, 8, 11, 14, 17']
+
+>>> sheet = ss.join(u'NewType')
+>>> print sorted(sheet.captions)
+[u'NewType', u'Number', u'Type']
