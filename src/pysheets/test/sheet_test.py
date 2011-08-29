@@ -202,6 +202,7 @@ class SheetTest(unittest.TestCase):
         self.assertRaises(IntegrityError, sheet.append_iterable, [])
         self.assertRaises(
                 IntegrityError, sheet.append_dict, {u'a': 1, u'b': 2})
+        self.assertRaises(IntegrityError, sheet.append, [])
         self.assertRaises(IntegrityError, sheet.append_iterable, [1, 2, 3])
         self.assertRaises(ValueError, sheet.add_column, u'a', [1])
 

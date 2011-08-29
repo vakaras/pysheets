@@ -521,8 +521,8 @@ Adding spreadsheet validators:
 ...         self.values.remove(row[self.column])
 ...
 ...     def replace(self, spreadsheet, sheet, row, replaced_row):
-...         self.delete(sheet, replaced_row)
-...         return self.insert(sheet, row)
+...         self.delete(spreadsheet, sheet, replaced_row)
+...         return self.insert(spreadsheet, sheet, row)
 
 
 >>> row_validator = UniqueIntegerValidator2(u'GID')

@@ -270,7 +270,7 @@ class Sheet(object):
             raise ValueError((
                 u'Columns number mismatch. Expected {0}. Is {1}.'
                 ).format(len(self.captions), len(fields)))
-        elif self.insert_validators:
+        elif self.insert_validators or self.name:
             # There are some validators. Converting to dict.
             self.append_dict(dict([
                 (caption, value)
@@ -291,6 +291,10 @@ class Sheet(object):
         it.
 
         """
+
+        if not self.captions:
+            raise IntegrityError(
+                    u'Adding data to sheet with zero columns.')
 
         try:
             row[self.captions[0]]

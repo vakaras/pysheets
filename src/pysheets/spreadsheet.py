@@ -22,7 +22,7 @@ class SpreadSheet(object):
 
     def __init__(
             self, file=None, reader_name=None, reader=None, names=None,
-            reader_args=None):
+            reader_args=None, sheet_captions=None):
         """
 
         If ``file`` is not ``None``, then data is read from it.
@@ -31,6 +31,10 @@ class SpreadSheet(object):
         that file is an unicode string with path to a file to read
         information from and which reader to use is tried to guess by
         file name extension.
+
+        If ``names`` is not ``None``, then sheets with given names are
+        created. If ``sheet_captions`` is not ``None`` too, then it is
+        passed to :py:class:`sheet's <Sheet>` constructor.
 
         :param file: File from which to read data.
         :type file: unicode or file like object.
@@ -54,7 +58,7 @@ class SpreadSheet(object):
                 }
 
         if names:
-            self.create_sheets(names)
+            self.create_sheets(names, captions=sheet_captions)
 
     def __len__(self):
         return len(self.sheets)
@@ -161,6 +165,10 @@ class SpreadSheet(object):
 
     def add_validator(self, validator, *types):
         """ Adds validator to validators lists mentioned in ``types``.
+
+        .. note::
+            Validators are just added. They are not executed for
+            existing data.
         """
 
         for validator_type in types:
