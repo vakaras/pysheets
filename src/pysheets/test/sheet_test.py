@@ -8,6 +8,10 @@ from cStringIO import StringIO
 from pysheets.exceptions import IntegrityError
 from pysheets.sheet import Row, Sheet, Column
 from pysheets.readers.csv import CSVReader
+from validators import (
+        ValidationError,
+        UniqueIntegerValidator, UniqueNameValidator,
+        validate_nothing)
 
 
 class RowTest(unittest.TestCase):
@@ -215,43 +219,7 @@ class SheetTest(unittest.TestCase):
         """ Test non-modifying validators.
         """
 
-        class ValidationError(Exception):
-            pass
-
-        class UniqueIntegerValidator(object):
-
-            def __init__(self, column):
-                self.values = set()
-                self.column = column
-
-            def insert(self, sheet, row):
-                try:
-                    value = row[self.column] = int(row[self.column])
-                except ValueError:
-                    raise ValidationError((
-                        u'Values of column {0} have to be integers.'
-                        ).format(self.column))
-                if value in self.values:
-                    raise ValidationError((
-                        u'Values of column {0} have to be unique integers.'
-                        ).format(self.column))
-                else:
-                    self.values.add(value)
-                return row
-
-            def delete(self, sheet, row):
-                self.values.remove(row[self.column])
-
-            def replace(self, sheet, row, replaced_row):
-                self.delete(sheet, replaced_row)
-                return self.insert(sheet, row)
-
-        def validate_nothing(sheet, row, replaced_row=None):
-            """ A dummy function for testing.
-            """
-            return row
-
-        validator = UniqueIntegerValidator('ID')
+        validator = UniqueIntegerValidator(u'ID')
         sheet = Sheet(captions=[u'ID'])
         sheet.add_insert_validator(validator.insert)
         sheet.add_delete_validator(validator.delete)
@@ -324,34 +292,6 @@ class SheetTest(unittest.TestCase):
         sheet[0] = {u'ID': u'0', u'Name': u'bar foo'}
         self.assertEqual(len(sheet), 1)
         self.assertEqual(list(sheet[0]), [u'0', u'Bar', u'Foo'])
-
-        class ValidationError(Exception):
-            pass
-
-        class UniqueNameValidator(object):
-            """ Validates if all names in list are unique.
-            """
-
-            def __init__(self):
-                self.values = set()
-                self.counter = 1
-
-            def insert(self, sheet, row):
-                value = (row[u'First name'], row[u'Last name'])
-                if value in self.values:
-                    raise ValidationError(u'Name duplicate')
-                else:
-                    self.values.add(value)
-                row.setdefault(u'ID', unicode(self.counter))
-                self.counter += 1
-                return row
-
-            def delete(self, sheet, row):
-                self.values.remove((row[u'First name'], row[u'Last name']))
-
-            def replace(self, sheet, row, replaced_row):
-                self.delete(sheet, replaced_row)
-                return self.insert(sheet, row)
 
         validator = UniqueNameValidator()
         sheet.add_insert_validator(validator.insert)

@@ -418,8 +418,6 @@ class Sheet(object):
         """ Links sheet to spreadsheet.
         """
 
-        if self.name:
-            raise IntegrityError(u'Sheet is already linked to spreadsheet.')
         self.spreadsheet = spreadsheet
         self.name = name
 
@@ -427,8 +425,6 @@ class Sheet(object):
         """ Unlinks sheet from spreadsheet.
         """
 
-        if self.name is None:
-            raise IntegrityError(u'Sheet is not linked to spreadsheet.')
         self.spreadsheet = None
         self.name = None
 
