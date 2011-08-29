@@ -67,7 +67,7 @@ class MountPoint(type):
     """ Meta class for readers and writers plugin mount point.
     """
 
-    def __init__(cls, name, bases, attrs):
+    def __init__(mcs, name, bases, attrs):
         """
 
         +   If creating mount point class, then creates plugins dict.
@@ -76,9 +76,9 @@ class MountPoint(type):
 
         """
 
-        super(MountPoint, cls).__init__(name, bases, attrs)
+        super(MountPoint, mcs).__init__(name, bases, attrs)
 
-        if not hasattr(cls, 'plugins'):
-            cls.plugins = PluginManager()
+        if not hasattr(mcs, 'plugins'):
+            mcs.plugins = PluginManager()
         else:
-            cls.plugins.add(cls)
+            mcs.plugins.add(mcs)

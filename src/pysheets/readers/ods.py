@@ -27,7 +27,7 @@ one sheet.
 
 
 from odf.opendocument import load
-from odf.table import Table, TableRow, TableCell
+from odf.table import Table, TableRow
 
 from pysheets.exceptions import InvalidFileError
 from pysheets.readers import SheetReader, SpreadSheetReader

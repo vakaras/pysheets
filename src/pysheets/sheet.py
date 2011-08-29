@@ -96,7 +96,6 @@ class Column(object):
         return self.sheet.captions[self.index]
 
 
-
 class Sheet(object):
     """ Class representing simple sheet.
 
@@ -312,7 +311,7 @@ class Sheet(object):
 
         """
 
-        for i, caption in enumerate(self.captions):
+        for i in range(len(self.captions)):
             yield Column(self, i)
 
     def get(self, *captions):
@@ -376,12 +375,12 @@ class Sheet(object):
         elif columns is None:
             self.rows.sort(key=lambda x: x.fields)
         else:
-            def key(row):
+            def field_key(row):
                 """ Returns sort key for the given row.
                 """
                 return [row.fields[self.captions_index[caption]]
                         for caption in columns]
-            self.rows.sort(key=key, **kwargs)
+            self.rows.sort(key=field_key, **kwargs)
 
     def add_insert_validator(self, validator):
         """ Adds validator to insert validators queue.
