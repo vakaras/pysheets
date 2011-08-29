@@ -5,12 +5,12 @@ import unittest
 import os
 
 from pysheets.exceptions import IntegrityError, InvalidFileError
-from pysheets.readers.ods import ODSReader
+from pysheets.readers.ods import ODFSheetReader
 from pysheets.sheet import Sheet
 
 
 class ODSSheetReaderTest01(unittest.TestCase):
-    """ Tests for :py:class:`pysheets.readers.ods.ODSReader`.
+    """ Tests for :py:class:`pysheets.readers.ods.ODFSheetReader`.
 
     Testing reading ODF file, which has only one table.
     """
@@ -34,7 +34,7 @@ class ODSSheetReaderTest01(unittest.TestCase):
         self.file = os.path.join(
                 os.path.dirname(__file__), 'files', 'sheet.ods'
                 ).decode('utf-8')
-        self.reader = ODSReader()
+        self.reader = ODFSheetReader()
         self.sheet = Sheet()
         self.assertEqual(len(self.sheet), 0)
         self.assertEqual(self.sheet.captions, [])
@@ -77,7 +77,7 @@ class ODSSheetReaderTest01(unittest.TestCase):
 
 
 class ODSSheetReaderTest02(unittest.TestCase):
-    """ Tests for :py:class:`pysheets.readers.ods.ODSReader`.
+    """ Tests for :py:class:`pysheets.readers.ods.ODFSheetReader`.
 
     Testing reading ODF file, which has only one table.
     """
@@ -86,7 +86,7 @@ class ODSSheetReaderTest02(unittest.TestCase):
         self.file = os.path.join(
                 os.path.dirname(__file__), 'files', 'spreadsheet.ods'
                 ).decode('utf-8')
-        self.reader = ODSReader()
+        self.reader = ODFSheetReader()
         self.sheet = Sheet()
         self.assertEqual(len(self.sheet), 0)
         self.assertEqual(self.sheet.captions, [])

@@ -33,7 +33,7 @@ from pysheets.exceptions import InvalidFileError
 from pysheets.readers import SheetReader
 
 
-class ODSReader(SheetReader):
+class ODFSheetReader(SheetReader):
     """ ODS file reader. (Expects, that there is only one sheet in
     document.)
     """
