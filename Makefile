@@ -18,7 +18,7 @@ show-check:
 # Creating environment.
 
 bin/buildout:
-	python bootstrap.py
+	python2.7 bootstrap.py
 
 buildout: bin/buildout
 	bin/buildout -v
