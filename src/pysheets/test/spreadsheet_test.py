@@ -8,6 +8,7 @@ from cStringIO import StringIO
 from pysheets.exceptions import IntegrityError
 from pysheets.sheet import Sheet
 from pysheets.spreadsheet import SpreadSheet
+from pysheets.readers.ods import ODFSpreadSheetReader
 from validators import (
         ValidationError,
         UniqueIntegerValidator, SheetOrder,
@@ -164,3 +165,44 @@ class SpreadSheetTest(unittest.TestCase):
 
         sheet2[0] = {u'GID': 3}
         sheet1.append([2])
+
+    def setUp(self):
+
+        self.file = os.path.join(
+                os.path.dirname(__file__),
+                'readers_test', 'files', 'spreadsheet.ods'
+                ).decode('utf-8')
+
+    def test_03(self):
+
+        ss = SpreadSheet()
+
+        reader = ODFSpreadSheetReader()
+        ss.read(self.file, reader=reader,
+                reader_args={'ignore_sheets': u'Empty'})
+        self.assertEqual(
+                ss.names, [u'List', u'Formulas', u'Participants'])
+
+    def test_04(self):
+
+        ss = SpreadSheet()
+
+        ss.read(self.file, u'ODS',
+                reader_args={'ignore_sheets': u'Empty'})
+        self.assertEqual(
+                ss.names, [u'List', u'Formulas', u'Participants'])
+
+    def test_05(self):
+
+        ss = SpreadSheet()
+
+        ss.read(self.file, reader_args={'ignore_sheets': u'Empty'})
+        self.assertEqual(
+                ss.names, [u'List', u'Formulas', u'Participants'])
+
+    def test_06(self):
+
+        ss = SpreadSheet(self.file, reader_args={'ignore_sheets': u'Empty'})
+
+        self.assertEqual(
+                ss.names, [u'List', u'Formulas', u'Participants'])

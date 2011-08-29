@@ -9,6 +9,7 @@
 
 from pysheets.exceptions import IntegrityError
 from pysheets.sheet import Sheet
+from pysheets.readers import SpreadSheetReader
 
 
 class SpreadSheet(object):
@@ -60,6 +61,9 @@ class SpreadSheet(object):
         if names:
             self.create_sheets(names, captions=sheet_captions)
 
+        if file:
+            self.read(file, reader_name, reader, reader_args)
+
     def __len__(self):
         return len(self.sheets)
 
@@ -80,6 +84,25 @@ class SpreadSheet(object):
         sheet.unset_spreadsheet()
         del self.sheets[name]
         self.names.remove(name)
+
+    def read(
+            self, file, reader_name=None, reader=None, reader_args=None):
+        """ Reads data from file into spreadsheet.
+
+        :param file: File from which to read data.
+        :type file: unicode or file like object.
+        :param reader_name: Name of the reader to use.
+        :type reader_name: None or unicode.
+        :param reader: Callable to use for reading file.
+        :type reader: None or callable.
+        """
+
+        if reader is None:
+            if reader_name:
+                reader = SpreadSheetReader.plugins[reader_name]()
+            else:
+                reader = SpreadSheetReader.plugins.get_by_file(file)()
+        reader(self, file, **(reader_args or {}))
 
     def create_sheet(self, name, *args, **kwargs):
         """ Creates sheet and appends it to spreadsheet with given name.

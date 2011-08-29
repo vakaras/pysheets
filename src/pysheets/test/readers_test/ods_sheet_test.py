@@ -5,11 +5,12 @@ import unittest
 import os
 
 from pysheets.exceptions import IntegrityError, InvalidFileError
-from pysheets.readers.ods import ODFSheetReader
+from pysheets.readers.ods import ODFSheetReader, ODFSpreadSheetReader
 from pysheets.sheet import Sheet
+from pysheets.spreadsheet import SpreadSheet
 
 
-class ODSSheetReaderTest01(unittest.TestCase):
+class ODFSheetReaderTest01(unittest.TestCase):
     """ Tests for :py:class:`pysheets.readers.ods.ODFSheetReader`.
 
     Testing reading ODF file, which has only one table.
@@ -76,10 +77,8 @@ class ODSSheetReaderTest01(unittest.TestCase):
                 [[u'Foo Bar'], [u'Fooer Barer']])
 
 
-class ODSSheetReaderTest02(unittest.TestCase):
+class ODFSheetReaderTest02(unittest.TestCase):
     """ Tests for :py:class:`pysheets.readers.ods.ODFSheetReader`.
-
-    Testing reading ODF file, which has only one table.
     """
 
     def setUp(self):
@@ -162,3 +161,57 @@ class ODSSheetReaderTest02(unittest.TestCase):
         self.assertRaises(
                 InvalidFileError, self.reader, self.sheet, self.file,
                 sheet_name=u'Empty')
+
+
+class ODFSpreadSheetReaderTest(unittest.TestCase):
+    """ Tests for :py:class:`pysheets.readers.ods.ODFSpreadSheetReader`.
+    """
+
+    def setUp(self):
+        self.file = os.path.join(
+                os.path.dirname(__file__), 'files', 'spreadsheet.ods'
+                ).decode('utf-8')
+        self.reader = ODFSpreadSheetReader()
+        self.ss = SpreadSheet()
+        self.assertEqual(len(self.ss), 0)
+        self.assertEqual(self.ss.names, [])
+
+    def tearDown(self):
+        self.file = None
+        self.reader = None
+        self.sheet = None
+
+    def test_01(self):
+        self.assertRaises(InvalidFileError, self.reader, self.ss, self.file)
+
+    def test_02(self):
+        self.reader(self.ss, self.file, ignore_sheets=[u'Empty'])
+        self.assertEqual(len(self.ss), 3)
+        self.assertEqual(
+                self.ss.names, [u'List', u'Formulas', u'Participants'])
+        sheet = self.ss[u'Participants']
+        self.assertEqual(
+                sheet.captions,
+                [
+                    u'Participants', u'Event1', u'Event2',
+                    u'Event3', u'Event4'])
+        self.assertEqual(
+                [list(row) for row in sheet],
+                [
+                    [u'Foo Bar1', u'1', None, None, u'1', ],
+                    [u'Foo Bar2', None, None, None, None, ],
+                    [u'Foo Bar3', None, u'1', None, None, ],
+                    [u'Foo Bar4', None, None, None, u'1', ],
+                    [u'Foo Bar5', u'1', None, None, None, ],
+                    [u'Foo Bar6', None, None, u'1', None, ],
+                    [u'Foo Bar7', u'1', None, None, None, ],
+                    [u'Foo Bar8', None, None, u'1', None, ],
+                    [u'Foo Bar9', None, u'1', None, None, ], ])
+
+    def test_03(self):
+        self.reader(self.ss, self.file,
+                read_sheets=[u'Participants', u'Empty', u'List'],
+                ignore_sheets=[u'Empty'])
+        self.assertEqual(len(self.ss), 2)
+        self.assertEqual(
+                self.ss.names, [u'List', u'Participants'])
