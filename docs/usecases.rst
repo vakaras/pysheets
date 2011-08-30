@@ -639,3 +639,18 @@ Joining and splitting
 >>> sheet = ss.join(u'NewType')
 >>> print sorted(sheet.captions)
 [u'NewType', u'Number', u'Type']
+
+--------------
+Exporting data
+--------------
+
+>>> from pysheets.spreadsheet import SpreadSheet
+>>> from pysheets.sheet import Sheet
+>>>
+>>> sheet = Sheet(
+...     captions=[u'Type', u'Number', u'Square'],
+...     rows=[(i%3, i, i * i) for i in range(20)])
+...
+>>> ss = SpreadSheet()
+>>> ss.load(sheet, columns=u'Type')
+>>> ss.write('/tmp/example.ods')

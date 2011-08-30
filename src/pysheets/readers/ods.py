@@ -3,8 +3,7 @@
 
 """
 
-Reader for ODF Spreadsheet files. Expects, that Spreadsheet has only
-one sheet.
+Readers for ODF Spreadsheet files.
 
 >>> from odf.opendocument import load
 >>> from odf.table import Table, TableRow, TableCell

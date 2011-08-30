@@ -10,6 +10,7 @@
 from pysheets.exceptions import IntegrityError
 from pysheets.sheet import Sheet
 from pysheets.readers import SpreadSheetReader
+from pysheets.writers import SpreadSheetWriter
 
 
 class SpreadSheet(object):
@@ -103,6 +104,21 @@ class SpreadSheet(object):
             else:
                 reader = SpreadSheetReader.plugins.get_by_file(file)()
         reader(self, file, **(reader_args or {}))
+
+    def write(
+            self, file, writer_name=None, writer=None,
+            writer_constructor_args=None, writer_args=None):
+        """ Writes spreadsheet data into file.
+        """
+
+        if writer is None:
+            if writer_name:
+                writer = SpreadSheetWriter.plugins[writer_name](
+                        **(writer_constructor_args or {}))
+            else:
+                writer = SpreadSheetWriter.plugins.get_by_file(file)(
+                        **(writer_constructor_args or {}))
+        writer(self, file, **(writer_args or {}))
 
     def create_sheet(self, name, *args, **kwargs):
         """ Creates sheet and appends it to spreadsheet with given name.
