@@ -19,6 +19,7 @@
 from pysheets.exceptions import IntegrityError
 import pysheets.readers
 from pysheets.readers import SheetReader
+from pysheets.writers import SheetWriter
 
 
 class Row(object):
@@ -461,5 +462,13 @@ class Sheet(object):
 for reader_module in pysheets.readers.__all__:
     try:
         __import__('pysheets.readers', fromlist=[reader_module], level=0)
+    except ImportError:
+        pass
+
+
+# Init built-in writers. (Silently.)
+for writer_module in pysheets.writers.__all__:
+    try:
+        __import__('pysheets.writers', fromlist=[writer_module], level=0)
     except ImportError:
         pass

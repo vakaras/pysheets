@@ -424,8 +424,26 @@ class SheetTest(unittest.TestCase):
                 os.path.dirname(__file__),
                 'readers_test', 'files', 'sheet_amp.csv')
 
-        reader = CSVReader()
         sheet = Sheet(
                 file.decode('utf-8'),
                 reader_args={'delimiter': '&', 'quotechar': '`'})
         self.assertSheet(sheet)
+
+    def test_14(self):
+
+        sheet = Sheet(
+                captions=[u'Number', u'Square', u'Cube'],
+                rows=[(i, i * i, i * i * i) for i in range(5)])
+        file = StringIO()
+        sheet.write(file, u'CSV')
+        self.assertEqual(
+                file.getvalue(),
+                """\
+"Number";"Square";"Cube"
+"0";"0";"0"
+"1";"1";"1"
+"2";"4";"8"
+"3";"9";"27"
+"4";"16";"64"
+"""
+                )

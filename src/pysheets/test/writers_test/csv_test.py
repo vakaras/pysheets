@@ -94,3 +94,4 @@ class CSVWriterTest(unittest.TestCase):
 "3";"9";"27"
 "4";"16";"64"
 """
+                )
