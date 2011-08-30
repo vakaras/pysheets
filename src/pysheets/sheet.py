@@ -195,7 +195,7 @@ class Sheet(object):
 
     def read(
             self, file, create_columns=False, reader_name=None,
-            reader=None, reader_args=None):
+            reader=None, reader_args=None, reader_constructor_args=None):
         """ Reads data from file into sheet.
 
         :param file: File from which to read data.
@@ -208,10 +208,27 @@ class Sheet(object):
 
         if reader is None:
             if reader_name:
-                reader = SheetReader.plugins[reader_name]()
+                reader = SheetReader.plugins[reader_name](
+                        **(reader_constructor_args or {}))
             else:
-                reader = SheetReader.plugins.get_by_file(file)()
+                reader = SheetReader.plugins.get_by_file(file)(
+                        **(reader_constructor_args or {}))
         reader(self, file, create_columns, **(reader_args or {}))
+
+    def write(
+            self, file, writer_name=None, writer=None,
+            writer_constructor_args=None, writer_args=None):
+        """ Writes sheet data into file.
+        """
+
+        if writer is None:
+            if writer_name:
+                writer = SheetWriter.plugins[writer_name](
+                        **(writer_constructor_args or {}))
+            else:
+                writer = SheetWriter.plugins.get_by_file(file)(
+                        **(writer_constructor_args or {}))
+        writer(self, file, **(writer_args or {}))
 
     def add_column(self, caption, values=()):
         """ Appends column to the right side of sheet.

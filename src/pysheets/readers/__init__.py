@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-""" Plugin point for readers.
+""" Plugin points for readers.
 """
 
 
