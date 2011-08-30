@@ -60,3 +60,11 @@ class SpreadSheetReader(object):
 
 
 __all__ = ['csv', 'ods']
+
+
+# Init built-in readers. (Silently.)
+for reader_module in __all__:
+    try:
+        __import__('pysheets.readers', fromlist=[reader_module], level=0)
+    except ImportError:
+        pass

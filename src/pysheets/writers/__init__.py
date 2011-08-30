@@ -57,3 +57,11 @@ class SpreadSheetWriter(object):
 
 
 __all__ = ['csv', 'ods']
+
+
+# Init built-in writers. (Silently.)
+for writer_module in __all__:
+    try:
+        __import__('pysheets.writers', fromlist=[writer_module], level=0)
+    except ImportError:
+        pass

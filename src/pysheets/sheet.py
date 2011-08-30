@@ -456,19 +456,3 @@ class Sheet(object):
 
         self.spreadsheet = None
         self.name = None
-
-
-# Init built-in readers. (Silently.)
-for reader_module in pysheets.readers.__all__:
-    try:
-        __import__('pysheets.readers', fromlist=[reader_module], level=0)
-    except ImportError:
-        pass
-
-
-# Init built-in writers. (Silently.)
-for writer_module in pysheets.writers.__all__:
-    try:
-        __import__('pysheets.writers', fromlist=[writer_module], level=0)
-    except ImportError:
-        pass
