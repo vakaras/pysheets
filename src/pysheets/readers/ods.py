@@ -40,7 +40,14 @@ def row_values_generator(row, default_value):
             (u'urn:oasis:names:tc:opendocument:xmlns:table:1.0',
                 u'number-columns-repeated'), 1))):
             try:
-                yield cell.firstChild.firstChild.data
+                for node in cell.childNodes:
+                    if node.qname == (
+                            u'urn:oasis:names:tc:opendocument:'
+                            u'xmlns:text:1.0', u'p'):
+                        yield node.firstChild.data
+                        break
+                else:
+                    yield default_value
             except AttributeError:
                 yield default_value
 
@@ -61,8 +68,16 @@ def insert_to_sheet(iterator, sheet, captions, default_value):
     """
 
     for row in iterator:
-        sheet.append_dict(
-                generate_row_dict(row, captions, default_value))
+        rows_count = int(row.attributes.get(
+            (u'urn:oasis:names:tc:opendocument:xmlns:table:1.0',
+                u'number-rows-repeated'), 1))
+        if rows_count > 1000:
+            # Reached last row.
+            break
+        else:
+            for i in range(rows_count):
+                sheet.append_dict(
+                        generate_row_dict(row, captions, default_value))
 
 
 class ODFSheetReader(SheetReader):
@@ -139,6 +154,10 @@ class ODFSpreadSheetReader(SpreadSheetReader):
             means all.
         :param ignore_sheets: Iterable of sheets to not read in.
 
+        .. todo::
+
+            Add ``ignore_empty_rows`` parameter.
+
         """
 
         doc = load(filename)
@@ -154,12 +173,17 @@ class ODFSpreadSheetReader(SpreadSheetReader):
 
             iterator = iter(table.getElementsByType(TableRow))
             try:
-                captions = [
-                        unicode(caption_node.firstChild.firstChild.data)
-                        for caption_node in iterator.next().childNodes]
-            except (StopIteration, AttributeError):
+                captions = []
+                for caption_node in iterator.next().childNodes:
+                    captions.append(
+                        unicode(caption_node.firstChild.firstChild.data))
+            except StopIteration:
                 raise InvalidFileError(
                         u'Trying to read empty sheet ({0}).'.format(name))
+            except AttributeError:
+                if not captions:
+                    raise InvalidFileError((
+                        u'Trying to read empty sheet ({0}).').format(name))
 
             sheet = spreadsheet.create_sheet(name, captions=captions)
 
