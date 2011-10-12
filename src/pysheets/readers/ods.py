@@ -158,7 +158,8 @@ class ODFSpreadSheetReader(SpreadSheetReader):
                         unicode(caption_node.firstChild.firstChild.data)
                         for caption_node in iterator.next().childNodes]
             except (StopIteration, AttributeError):
-                raise InvalidFileError(u'Trying to read empty sheet.')
+                raise InvalidFileError(
+                        u'Trying to read empty sheet ({0}).'.format(name))
 
             sheet = spreadsheet.create_sheet(name, captions=captions)
 
