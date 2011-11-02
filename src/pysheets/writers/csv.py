@@ -6,6 +6,7 @@
 
 
 from __future__ import absolute_import
+import cStringIO
 import csv
 import functools
 import datetime
@@ -24,7 +25,7 @@ class CSVWriter(SheetWriter):
 
     def __init__(
             self, dialect='excel', delimiter=';', quotechar='\"',
-            lineterminator='\n', quoting=csv.QUOTE_ALL):
+            lineterminator='\n', quoting=csv.QUOTE_ALL, encoding='utf-8'):
         super(CSVWriter, self).__init__()
 
         self.dialect = dialect
@@ -32,6 +33,7 @@ class CSVWriter(SheetWriter):
         self.quotechar = quotechar
         self.lineterminator = lineterminator
         self.quoting = quoting
+        self.encoding = encoding
 
     def write_row(self, row, writer):
         """ Converts each field into byte string, and passes to
@@ -53,13 +55,15 @@ class CSVWriter(SheetWriter):
         """ Writes data from sheet into file.
         """
 
-        writer = self.create_writer(file)
+        buffer = cStringIO.StringIO()
+        writer = self.create_writer(buffer)
 
         write = lambda row: self.write_row(row, writer)
 
         write(sheet.captions)
         for row in sheet:
             write(row)
+        file.write(buffer.getvalue().decode('utf-8').encode(self.encoding))
 
     def create_writer(self, file):
         """ Constructs CSV writer.
