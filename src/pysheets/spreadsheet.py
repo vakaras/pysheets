@@ -24,7 +24,8 @@ class SpreadSheet(object):
 
     def __init__(
             self, file=None, reader_name=None, reader=None, names=None,
-            reader_args=None, sheet_captions=None):
+            reader_args=None, sheet_captions=None,
+            validators=None):
         """
 
         If ``file`` is not ``None``, then data is read from it.
@@ -58,6 +59,14 @@ class SpreadSheet(object):
                 'add_sheet': [],
                 'remove_sheet': [],
                 }
+
+        if validators is not None:
+            for validator_creator in validators.get('creators', ()):
+                self.add_sheet_validator_creator(validator_creator)
+            for sheet_validator in validators.get('sheet', ()):
+                self.add_sheet_validator(*sheet_validator)
+            for spreadsheet_validator in validators.get('spreadsheet', ()):
+                self.add_validator(*spreadsheet_validator)
 
         if names:
             self.create_sheets(names, captions=sheet_captions)
