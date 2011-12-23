@@ -654,3 +654,12 @@ Exporting data
 >>> ss = SpreadSheet()
 >>> ss.load(sheet, columns=u'Type')
 >>> ss.write('/tmp/example.ods')
+>>> sheet.write(u'/tmp/example.pdf',
+...             writer_constructor_args={
+...                 'header': u'''
+... <span style="color:red; font-weight: bold; font-style:italic;">
+...     Header.
+... </span>
+... Page: <pdf:pagenumber />''',
+...                 'footer': u'Footer',
+...                 })

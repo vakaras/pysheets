@@ -4,16 +4,7 @@
 *.pyc
 *.egg-info/
 .~lock.*
-bin/buildout
-bin/coverage
-bin/ctags
-bin/develop
-bin/pylint
-bin/python
-bin/sphinx-build
-bin/sphinx-quickstart
-bin/test
-bin/rst2pdf
+bin/*
 develop-eggs/
 parts/
 docs/build/
