@@ -56,7 +56,7 @@ class SpreadSheetWriter(object):
     __metaclass__ = MountPoint
 
 
-__all__ = ['csv', 'ods']
+__all__ = ['csv', 'ods', 'xhtml']
 
 
 # Init built-in writers. (Silently.)
