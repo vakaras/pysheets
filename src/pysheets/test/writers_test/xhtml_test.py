@@ -32,12 +32,12 @@ class XHTMLWriterTest(unittest.TestCase):
                 self.file.getvalue(),
                 """\
 <table >
-  <tr ><th >Number</th><th >Square</th><th >Cube</th></tr>
-  <tr ><td >0</td><td >0</td><td >0</td></tr>
-  <tr ><td >1</td><td >1</td><td >1</td></tr>
-  <tr ><td >2</td><td >4</td><td >8</td></tr>
-  <tr ><td >3</td><td >9</td><td >27</td></tr>
-  <tr ><td >4</td><td >16</td><td >64</td></tr>
+  <tr ><th class="col0">Number</th><th class="col1">Square</th><th class="col2">Cube</th></tr>
+  <tr ><td class="col0">0</td><td class="col1">0</td><td class="col2">0</td></tr>
+  <tr ><td class="col0">1</td><td class="col1">1</td><td class="col2">1</td></tr>
+  <tr ><td class="col0">2</td><td class="col1">4</td><td class="col2">8</td></tr>
+  <tr ><td class="col0">3</td><td class="col1">9</td><td class="col2">27</td></tr>
+  <tr ><td class="col0">4</td><td class="col1">16</td><td class="col2">64</td></tr>
 </table>
 """
                 )
@@ -54,13 +54,12 @@ class XHTMLWriterTest(unittest.TestCase):
                 self.file.getvalue(),
                 """\
 <table class="grey blue" id="class1">
-  <tr c="y r"><th c="b o">Number</th><th c="b o">Square</th>\
-<th c="b o">Cube</th></tr>
-  <tr c="y r"><td c="b o">0</td><td c="b o">0</td><td c="b o">0</td></tr>
-  <tr c="y r"><td c="b o">1</td><td c="b o">1</td><td c="b o">1</td></tr>
-  <tr c="y r"><td c="b o">2</td><td c="b o">4</td><td c="b o">8</td></tr>
-  <tr c="y r"><td c="b o">3</td><td c="b o">9</td><td c="b o">27</td></tr>
-  <tr c="y r"><td c="b o">4</td><td c="b o">16</td><td c="b o">64</td></tr>
+  <tr c="y r"><th c="b o" class="col0">Number</th><th c="b o" class="col1">Square</th><th c="b o" class="col2">Cube</th></tr>
+  <tr c="y r"><td c="b o" class="col0">0</td><td c="b o" class="col1">0</td><td c="b o" class="col2">0</td></tr>
+  <tr c="y r"><td c="b o" class="col0">1</td><td c="b o" class="col1">1</td><td c="b o" class="col2">1</td></tr>
+  <tr c="y r"><td c="b o" class="col0">2</td><td c="b o" class="col1">4</td><td c="b o" class="col2">8</td></tr>
+  <tr c="y r"><td c="b o" class="col0">3</td><td c="b o" class="col1">9</td><td c="b o" class="col2">27</td></tr>
+  <tr c="y r"><td c="b o" class="col0">4</td><td c="b o" class="col1">16</td><td c="b o" class="col2">64</td></tr>
 </table>
 """
                 )

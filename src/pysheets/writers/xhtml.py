@@ -24,6 +24,26 @@ class XHTMLWriter(SheetWriter):
         self.tr_attrs = tr_attrs or {}
         self.td_attrs = td_attrs or {}
 
+    def merge_attributes(self, attrs, attrs2):
+        """ Merges attrs2 into attrs.
+        """
+        for key, value in attrs2.items():
+            if key in attrs:
+                if isinstance(value, list):
+                    if isinstance(attrs[key], list):
+                        attrs[key].extend(value)
+                    else:
+                        value.append(attrs[key])
+                        attrs[key] = value
+                else:
+                    if isinstance(attrs[key], list):
+                        attrs[key].append(value)
+                    else:
+                        attrs[key] = [value, attrs[key]]
+            else:
+                attrs[key] = value
+        return attrs
+
     def attributes_as_string(self, attributes):
         """ Converts attributes dict to string.
         """
@@ -41,7 +61,7 @@ class XHTMLWriter(SheetWriter):
 
         write(u'  <tr {0}>'.format(
             self.attributes_as_string(self.tr_attrs)))
-        for field in row:
+        for i, field in enumerate(row):
             if isinstance(field, datetime.datetime):
                 field = unicode(field.strftime('%Y-%m-%d %H:%M:%S'))
             elif isinstance(field, datetime.date):
@@ -49,7 +69,9 @@ class XHTMLWriter(SheetWriter):
             elif not isinstance(field, unicode):
                 field = unicode(field)
             write(u'<td {0}>{1}</td>'.format(
-                self.attributes_as_string(self.td_attrs),
+                self.attributes_as_string(
+                    self.merge_attributes({'class': u'col{0}'.format(i)},
+                        self.td_attrs)),
                 field
                 ))
         write(u'</tr>\n')
@@ -63,9 +85,11 @@ class XHTMLWriter(SheetWriter):
             self.attributes_as_string(self.table_attrs)))
         write(u'  <tr {0}>'.format(
             self.attributes_as_string(self.tr_attrs)))
-        for caption in sheet.captions:
+        for i, caption in enumerate(sheet.captions):
             write(u'<th {0}>{1}</th>'.format(
-                self.attributes_as_string(self.td_attrs),
+                self.attributes_as_string(
+                    self.merge_attributes({'class': u'col{0}'.format(i)},
+                        self.td_attrs)),
                 caption
                 ))
         write(u'</tr>\n')
