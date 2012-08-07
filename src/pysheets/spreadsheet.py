@@ -246,7 +246,7 @@ class SpreadSheet(object):
             row = validator(self, sheet, row, replaced_row)
         return row
 
-    def load(self, sheet, columns=None, name=None):
+    def load(self, sheet, columns=None, name=u'Sheet'):
         """ Loads sheet's data into spreadsheet. If ``columns`` is
         not ``None`` then splits sheet into multiple sheets.
 
